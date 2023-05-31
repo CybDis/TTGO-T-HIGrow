@@ -45,7 +45,11 @@
 //           rel = "4.2.2"; // For the Greenhouse auto watering, the plantValveNo have been introduced. (Greenhouse auto watering is in development)
 //           rel = "4.2.3"; // Removed the battery day counter - for good, use BeardedTingers solution if you need it.
 //           rel = "4.3.1"; // Finally the days since last charging works correctly.
-const String rel = "4.3.2"; // Corrected an error in DST.
+//           rel = "4.3.2"; // Corrected an error in DST.
+//           rel = "4.5.0"; // Soil limited to Min/Max 0/100% 
+//			 rel = "4.5.1"; // Intervall to 2h 
+const String rel = "4.6.0"; // Included external water level sensor and optimized debug output
+
 
 // mqtt constants
 WiFiClient wifiClient;
@@ -77,6 +81,7 @@ struct Config
   float humid;
   float soil;
   float soilTemp;
+  float water;
   float salt;
   String saltadvice;
   float bat;
@@ -136,14 +141,18 @@ void setup()
   // Start WiFi and update time
   connectToNetwork();
   Serial.println(" ");
-  Serial.println("Connected to network");
+  Serial.println("  Connected to network!");
   if (logging)
   {
     writeFile(SPIFFS, "/error.log", "Connected to network \n");
   }
 
+  Serial.print("  MAC: ");
   Serial.println(WiFi.macAddress());
+  Serial.print("  IP: ");
   Serial.println(WiFi.localIP());
+  Serial.print("  DNS: ");
+  Serial.println(WiFi.dnsIP());
   //  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
   //  timeClient.setTimeOffset(7200);
 
@@ -183,14 +192,10 @@ void setup()
     Serial.println(F("Wire NOK"));
   }
 
-  if (!bmp.begin())
+  if (bme_found && !bmp.begin())
   {
     Serial.println(F("Could not find a valid BMP280 sensor, check wiring!"));
     bme_found = false;
-  }
-  else
-  {
-    bme_found = true;
   }
 
   if (lightMeter.begin(BH1750::CONTINUOUS_HIGH_RES_MODE))
@@ -203,7 +208,7 @@ void setup()
   }
 
   float luxRead = lightMeter.readLightLevel(); // 1st read seems to return 0 always
-  Serial.print("lux ");
+  Serial.print("  lux: ");
   Serial.println(luxRead);
   delay(2000);
 
@@ -232,6 +237,8 @@ void setup()
   config.soil = soil;
   float soilTemp = readSoilTemp();
   config.soilTemp = soilTemp;
+  Serial.print("Soil temp: ");
+  Serial.println(soilTemp);
 
   uint32_t salt = readSalt();
   config.salt = salt;
@@ -252,6 +259,7 @@ void setup()
   {
     advice = "too high";
   }
+  Serial.print("Salt Advice: ");
   Serial.println(advice);
   config.saltadvice = advice;
 
@@ -259,8 +267,6 @@ void setup()
   float bat = readBattery();
   config.bat = bat;
   config.batcharge = "";
-  Serial.println("Battery level");
-  Serial.println(bat);
   if (bat > 130)
   {
     config.batcharge = "charging";
@@ -269,18 +275,18 @@ void setup()
     battChargeEpoc = String(epochChargeTime) + ":" + String(dayStamp);
     const char *batinfo_write = battChargeEpoc.c_str();
     writeFile(SPIFFS, "/batinfo.conf", batinfo_write);
-    Serial.println("dayStamp");
+    Serial.print("dayStamp: ");
     Serial.println(dayStamp);
     config.batchargeDate = dayStamp;
   }
 
-  Serial.println("Charge Epoc");
+  Serial.print("Charge Epoc: ");
   Serial.println(battChargeEpoc);
   unsigned long epochTime = timeClient.getEpochTime();
-  Serial.println("Test Epoc");
+  Serial.print("  Test Epoc: ");
   Serial.println(epochTime);
   epochChargeTime = battChargeEpoc.toInt();
-  Serial.println("first calculation");
+  Serial.print("  First calculation: ");
   Serial.println(epochTime - epochChargeTime);
   float epochTimeFl = float(epochTime);
   float epochChargeTimeFl = float(epochChargeTime); 
@@ -298,11 +304,15 @@ void setup()
   config.bootno = bootCount;
 
   luxRead = lightMeter.readLightLevel();
-  Serial.print("lux ");
+  Serial.print("lux: ");
   Serial.println(luxRead);
   config.lux = luxRead;
   config.rel = rel;
 
+
+  // Custom: Read water level
+  config.water = readWaterLevel();
+  
   // Create JSON file
   Serial.println(F("Creating JSON document..."));
   if (logging)

@@ -30,11 +30,23 @@ uint32_t readSalt()
 // READ Soil
 uint16_t readSoil()
 {
-  Serial.println(soil_max);
   uint16_t soil = analogRead(SOIL_PIN);
-  Serial.print("Soil before map: ");
-  Serial.println(soil);
-  return map(soil, soil_min, soil_max, 100, 0);
+  Serial.print("CALIBRATE ===================> Soil before map: ");
+  Serial.print(soil);
+  int result = map(soil, soil_min, soil_max, 100, 0);
+  Serial.print(" - percent after map: ");
+  Serial.println(result);
+
+  Serial.print(" Soil max: ");
+  Serial.println(soil_max);
+  Serial.print(" Sil min: ");
+  Serial.println(soil_min);
+
+  if (result > 100)
+    return 100;
+  if (result < 0)
+    return 0;
+  return result;
 }
 
 float readSoilTemp()
@@ -58,13 +70,40 @@ float readBattery()
 {
   int vref = 1100;
   uint16_t volt = analogRead(BAT_ADC);
-  Serial.print("Volt direct ");
+  Serial.print("Volt direct: ");
   Serial.println(volt);
   config.batvolt = volt;
   float battery_voltage = ((float)volt / 4095.0) * 2.0 * 3.3 * (vref) / 1000;
   config.batvoltage = battery_voltage;
-  Serial.print("Battery Voltage: ");
+  Serial.print("  Battery Voltage: ");
   Serial.println(battery_voltage);
+
   battery_voltage = battery_voltage * 100;
-  return map(battery_voltage, 416, 290, 100, 0);
+  float bat = map(battery_voltage, 416, 290, 100, 0);
+  Serial.print("  Battery level: ");
+  Serial.println(bat);
+
+  return bat;
+}
+
+
+#define WATERPOWER_PIN 17
+#define WATERSIGNAL_PIN 36
+
+// READ Water Level
+uint16_t readWaterLevel()
+{
+  pinMode(WATERPOWER_PIN, OUTPUT);
+  digitalWrite(WATERPOWER_PIN, HIGH);  // turn the sensor ON
+  delay(10);
+  uint16_t value= analogRead(WATERSIGNAL_PIN); // read the analog value from sensor
+  uint16_t percent = map(value, water_min, water_max, 0, 100);
+  Serial.print("CALIBRATE ===================> Water level sensor value: ");
+  Serial.print(value);
+  Serial.print(" - percent after map: ");
+  Serial.println(percent);
+  digitalWrite(WATERPOWER_PIN, LOW);  // turn the sensor off
+  if (percent > 100)
+    return 100;
+  return percent;
 }

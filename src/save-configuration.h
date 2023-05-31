@@ -1,9 +1,21 @@
+String floatToString(float value) {
+  // Runde den Wert auf eine Dezimalstelle
+  float roundedValue = roundf(value * 10.0) / 10.0;
+
+  // Überprüfe, ob der gerundete Wert eine Dezimalstelle ungleich null hat
+  if (fabs(roundedValue - (int)roundedValue) >= 0.1) {
+    // Konvertiere den gerundeten Wert mit Dezimalstelle in einen String
+    char buffer[10];
+    sprintf(buffer, "%.1f", roundedValue);
+    return String(buffer);
+  } else {
+    // Konvertiere den Wert ohne Dezimalstelle in einen String
+    return String((int)value);
+  }
+}
+
 // Allocate a  JsonDocument
 void saveConfiguration(const Config & config) {
-
-  //  Serial.println(WiFi.macAddress());
-  //  String stringMAC = WiFi.macAddress();
-  //  stringMAC.replace(':', '_');
 
   byte mac[6];
   WiFi.macAddress(mac);
@@ -19,11 +31,11 @@ void saveConfiguration(const Config & config) {
       chipId = chipId + String(mac[i], HEX);
     }
   }
-  Serial.println("chipId " + chipId);
+  Serial.println("  chipId: " + chipId);
   const String topicStr = device_name + "/" + chipId;
   const char* topic = topicStr.c_str();
+  Serial.print("  topic: ");
   Serial.println(topic);
-  Serial.println(ssid);
 
   StaticJsonDocument<1536> doc;
   // Set the values in the document
@@ -37,20 +49,21 @@ void saveConfiguration(const Config & config) {
   plant["time"] = config.time;
   plant["sleep5Count"] = config.sleep5no;
   plant["bootCount"] = config.bootno;
-  plant["lux"] = config.lux;
-  plant["temp"] = config.temp;
-  plant["humid"] = config.humid;
-  plant["soil"] = config.soil;
-  plant["soilTemp"] = config.soilTemp;
-  plant["salt"] = config.salt;
+  plant["lux"] = floatToString(config.lux);
+  plant["temp"] = floatToString(config.temp);
+  plant["humid"] = floatToString(config.humid);
+  plant["soil"] = floatToString(config.soil);
+  plant["soilTemp"] = floatToString(config.soilTemp);
+  plant["water"] = floatToString(config.water);
+  plant["salt"] = floatToString(config.salt);
   plant["saltadvice"] = config.saltadvice;
-  plant["bat"] = config.bat;
+  plant["bat"] = floatToString(config.bat);
   plant["batcharge"] = config.batcharge;
   plant["batchargeDate"] = config.batchargeDate;
-  plant["daysOnBattery"] = config.daysOnBattery;
-  plant["battvolt"] = config.batvolt;
-  plant["battvoltage"] = config.batvoltage;
-  plant["pressure"] = config.pressure;
+  plant["daysOnBattery"] = floatToString(config.daysOnBattery);
+  plant["battvolt"] = floatToString(config.batvolt);
+  plant["battvoltage"] = floatToString(config.batvoltage);
+  plant["pressure"] = floatToString(config.pressure);
   plant["plantValveNo"] = plantValveNo;
   plant["wifissid"] = WiFi.SSID();
   plant["rel"] = config.rel;
@@ -60,7 +73,7 @@ void saveConfiguration(const Config & config) {
   serializeJson(doc, buffer);
 
 
-  Serial.print("Sending message to topic: ");
+  Serial.print("  Sending message to topic: ");
   if (logging) {
     writeFile(SPIFFS, "/error.log", "Sending message to topic: \n");
   }
@@ -90,9 +103,8 @@ void saveConfiguration(const Config & config) {
     writeFile(SPIFFS, "/error.log", "You're connected to the MQTT broker! \n");
   }
 
-  Serial.println("You're connected to the MQTT broker!");
-  Serial.println();
-
+  Serial.println("You're connected to the MQTT broker! Publishing...");
+  
   bool retained = true;
 
   if (mqttClient.publish(topic, buffer, retained)) {

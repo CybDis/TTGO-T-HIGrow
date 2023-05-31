@@ -62,31 +62,25 @@ def send_discovery_topics(msg):
     entity_payloads = {
         'Tgrow_HIGrow': {
             'name': f"{d['plant']['sensorname']} Mac-ID",
-            'unit_of_meas': ""
         },
         'sensorname': {
             'name': f"{d['plant']['sensorname']}",
-            'unit_of_meas': ""
         },
         'date': {
             'name': f"{d['plant']['sensorname']} Date",
-            'unit_of_meas': "",             
             'icon': 'mdi:calendar'
         },
         'time': {
             'name': f"{d['plant']['sensorname']} Time",
-            'unit_of_meas': "", 
             'icon': 'mdi:clock-outline', 
             'frc_upd':True
         },
         'sleep5Count': {
             'name': f"{d['plant']['sensorname']} Sleep5count",
-            'unit_of_meas': "", 
             'icon':'mdi:counter'
         }, 
         'bootCount': {
             'name': f"{d['plant']['sensorname']} Bootcount",
-            'unit_of_meas': "", 
             'icon':'mdi:counter'
         }, 
         'lux': {
@@ -114,6 +108,11 @@ def send_discovery_topics(msg):
             'unit_of_meas': "°C", 
             'icon':'mdi:thermometer'
         },
+        'water': {
+            'name': f"{d['plant']['sensorname']} Water",
+            'unit_of_meas': "%", 
+            'icon':'mdi:waves-arrow-up'
+        }, 
         'salt': {
             'name': f"{d['plant']['sensorname']} Fertilizer",
             'unit_of_meas': "%", 
@@ -121,7 +120,6 @@ def send_discovery_topics(msg):
         },
         'saltadvice': {
             'name': f"{d['plant']['sensorname']} Fertilize state",
-            'unit_of_meas': "", 
             'icon':'mdi:alpha-i-circle-outline'
         },
         'bat': {
@@ -131,12 +129,10 @@ def send_discovery_topics(msg):
         }, 
         'batcharge': {
             'name': f"{d['plant']['sensorname']} Charging",
-            'unit_of_meas': "", 
             'icon':'mdi:battery'
         }, 
         'batchargeDate': {
             'name': f"{d['plant']['sensorname']} batchargeDate", 
-            'unit_of_meas': "", 
             'icon':'mdi:calendar'
         }, 
         'daysOnBattery': {
@@ -146,7 +142,6 @@ def send_discovery_topics(msg):
         }, 
         'wifissid': {
             'name': f"{d['plant']['sensorname']} WIFI",
-            'unit_of_meas': "", 
             'icon':'mdi:wifi'
         }, 
         'pressure': {
@@ -156,11 +151,9 @@ def send_discovery_topics(msg):
         }, 
         'plantValveNo': {
             'name': f"{d['plant']['sensorname']} plantValveNo",
-            'unit_of_meas': "", 
         }, 
         'rel': {
             'name': f"{d['plant']['sensorname']} Release",
-            'unit_of_meas': "", 
             'icon':'mdi:counter'
         }, 
     }
@@ -205,6 +198,6 @@ client = mqtt.Client()
 client.on_connect = on_connect
 client.on_message = on_message
 #client.username_pw_set("username", "password")
-client.connect("192.168.1.64", 1883, 60)
+client.connect("192.168.1.6", 1883, 60)
 
 client.loop_forever()

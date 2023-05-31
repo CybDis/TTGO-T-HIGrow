@@ -45,7 +45,7 @@ if (calibrate_soil)
 else
 {
   readFile(SPIFFS, "/soil.conf");
-  Serial.println("Here comes the calibration info:");
+  Serial.print("Here comes the calibration info: ");
   Serial.println(readString);
   String xval = getValue(readString, ':', 0);
   String yval = getValue(readString, ':', 1);
@@ -65,7 +65,7 @@ if (update_plant_name)
 else
 {
   readFile(SPIFFS, "/name.conf");
-  Serial.println("Here comes the name info:");
+  Serial.print("Here comes the name info: ");
   Serial.println(readString);
   plant_name = readString;
   readString = "";
