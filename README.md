@@ -8,4 +8,11 @@
 
 ### Getting started
 
-Go to the [WIKI](https://github.com/pesor/TTGO-T-HIGrow/wiki) of this Repo, there you will find a comprehensive toturial to help you implement this card.
+Go to the [WIKI](https://github.com/pesor/TTGO-T-HIGrow/wiki), there you will find a comprehensive toturial to help you implement this card.
+
+
+## Support my work ...
+**...with caffeine?**  
+
+<a href="https://www.buymeacoffee.com/cybdis" target="_blank">
+  <img src="https://raw.githubusercontent.com/CybDis/CybDis/main/bmc-yellow-button.png" height="60px"/></a>
