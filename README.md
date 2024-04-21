@@ -11,6 +11,18 @@
 Go to the [WIKI](https://github.com/pesor/TTGO-T-HIGrow/wiki), there you will find a comprehensive toturial to help you implement this card.
 
 
+## Disclaimer
+
+The project is forked from @pesor - who did a great work.
+
+**Primary modifications are:**
+
+- Updates in MQTT messages to reflect latest Home Assistant changes
+- (Optional) Water Level Sensor 
+- New Casing (3D print stl files) supporting larger LiPo battery
+- Original Casing (3D print stl files)
+- Some Bugfixing and optimizations
+
 ## Support my work ...
 **...with caffeine?**  
 
