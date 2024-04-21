@@ -28,20 +28,22 @@ uint32_t readSalt()
 }
 
 // READ Soil
-uint16_t readSoil()
+int16_t readSoil()
 {
   uint16_t soil = analogRead(SOIL_PIN);
-  Serial.print("CALIBRATE ===================> Soil before map: ");
+  Serial.print("CALIBRATE ===================> Current soil reading: ");
   Serial.print(soil);
   int result = map(soil, soil_min, soil_max, 100, 0);
-  Serial.print(" - percent after map: ");
+  Serial.print(" - percent calculated: ");
   Serial.println(result);
 
-  Serial.print(" Soil max: ");
+  Serial.print(" Soil max (air): ");
   Serial.println(soil_max);
-  Serial.print(" Sil min: ");
+  Serial.print(" Sil min (water): ");
   Serial.println(soil_min);
 
+  if (soil == 0) // ERROR
+    return -1;
   if (result > 100)
     return 100;
   if (result < 0)
@@ -77,12 +79,14 @@ float readBattery()
   config.batvoltage = battery_voltage;
   Serial.print("  Battery Voltage: ");
   Serial.println(battery_voltage);
-
+  
   battery_voltage = battery_voltage * 100;
-  float bat = map(battery_voltage, 416, 290, 100, 0);
+  float bat =  map(battery_voltage, 416, 290, 100, 0);
   Serial.print("  Battery level: ");
   Serial.println(bat);
 
+  if (bat < 0)
+    return 0;
   return bat;
 }
 

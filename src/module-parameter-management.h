@@ -65,11 +65,12 @@ if (update_plant_name)
 else
 {
   readFile(SPIFFS, "/name.conf");
-  Serial.print("Here comes the name info: ");
-  Serial.println(readString);
   plant_name = readString;
   readString = "";
 }
+
+Serial.print("Persisted plant name: ");
+Serial.println(plant_name);
 
 pinMode(led, OUTPUT);
 digitalWrite(led, 0);

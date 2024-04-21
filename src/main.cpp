@@ -47,8 +47,12 @@
 //           rel = "4.3.1"; // Finally the days since last charging works correctly.
 //           rel = "4.3.2"; // Corrected an error in DST.
 //           rel = "4.5.0"; // Soil limited to Min/Max 0/100% 
-//			 rel = "4.5.1"; // Intervall to 2h 
-const String rel = "4.6.0"; // Included external water level sensor and optimized debug output
+//           rel = "4.5.1"; // Intervall to 2h 
+//           rel = "4.6.0"; // Included external water level sensor and optimized debug output
+//           rel = "4.6.1"; // Removed Date/Time and replaced with Updated (timestamp)
+//           rel = "4.6.2"; // ...
+//           rel = "4.6.3"; // Fixed limits (batt <0, soil not readable...)
+const String rel = "4.6.4"; // Removed obsolete DST code
 
 
 // mqtt constants
@@ -72,8 +76,9 @@ bool bme_found = false;
 //json construct setup
 struct Config
 {
-  String date;
-  String time;
+  // String date;
+  // String time;
+  String updated;
   int bootno;
   int sleep5no;
   float lux;
@@ -116,12 +121,9 @@ DS18B20 temp18B20(DS18B20_PIN);
 
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP);
-String formattedDate;
 String dayStamp;
-String timeStamp1;
 
 // Start Subroutines
-
 #include <file-management.h>
 #include <go-to-deep-sleep.h>
 #include <get-string-value.h>
@@ -153,10 +155,9 @@ void setup()
   Serial.println(WiFi.localIP());
   Serial.print("  DNS: ");
   Serial.println(WiFi.dnsIP());
-  //  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-  //  timeClient.setTimeOffset(7200);
+  Serial.print("  Hostname: ");
+  Serial.println(WiFi.getHostname());
 
-  timeClient.setTimeOffset(gmtOffset_sec);
   while (!timeClient.update())
   {
     timeClient.forceUpdate();

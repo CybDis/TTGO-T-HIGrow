@@ -3,9 +3,12 @@ void connectToNetwork()
   Serial.print("Size of SSID array ");
   Serial.println(ssidArrNo);
   const char *Hostname = plant_name.c_str();
-  WiFi.mode(WIFI_STA);
+  WiFi.mode(WIFI_AP); // Workaround: Setting Hostname works only in AP mode
   WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE); // call is only a workaround for bug in WiFi class
   WiFi.setHostname(Hostname);
+
+  WiFi.mode(WIFI_STA);
+  WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
   WiFi.setAutoConnect(true);
   
   bool breakLoop = false;

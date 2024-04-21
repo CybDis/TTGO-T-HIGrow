@@ -1,15 +1,15 @@
 String floatToString(float value) {
-  // Runde den Wert auf eine Dezimalstelle
+  // Round the value to one decimal place
   float roundedValue = roundf(value * 10.0) / 10.0;
 
-  // Überprüfe, ob der gerundete Wert eine Dezimalstelle ungleich null hat
+  // Check if the rounded value has a decimal place not equal to zero
   if (fabs(roundedValue - (int)roundedValue) >= 0.1) {
-    // Konvertiere den gerundeten Wert mit Dezimalstelle in einen String
+    // Convert the rounded value with decimal place into a string
     char buffer[10];
     sprintf(buffer, "%.1f", roundedValue);
     return String(buffer);
   } else {
-    // Konvertiere den Wert ohne Dezimalstelle in einen String
+    // Convert the value without decimal place into a string
     return String((int)value);
   }
 }
@@ -45,8 +45,9 @@ void saveConfiguration(const Config & config) {
   JsonObject plant = root.createNestedObject("plant");
   plant[device_name] = chipId;
   plant["sensorname"] = plant_name;
-  plant["date"] = config.date;
-  plant["time"] = config.time;
+  plant["updated"] = config.updated;
+  // plant["date"] = config.date;
+  // plant["time"] = config.time;
   plant["sleep5Count"] = config.sleep5no;
   plant["bootCount"] = config.bootno;
   plant["lux"] = floatToString(config.lux);

@@ -1,5 +1,5 @@
 '''
-TTGO-HIGrow to MQTT Gateway, release 4.3.1
+TTGO-HIGrow to MQTT Gateway, release 4.6.3
 '''
 import json
 import yaml
@@ -54,106 +54,115 @@ def send_discovery_topics(msg):
     d = json.loads(msg.payload)
     device_payload = {
         'identifiers': [f"{d['plant']['Tgrow_HIGrow']}"],
-        'manufacturer': "LILYGO, programmed by Per Rose",
+        'manufacturer': "LILYGO, programmed by github.com/cybdis",
         'model':'TTGO T-Higrow',   
         'name':  d['plant']['sensorname'],
         'sw_version':  d['plant']['rel']
     }
     entity_payloads = {
-        'Tgrow_HIGrow': {
-            'name': f"{d['plant']['sensorname']} Mac-ID",
-        },
         'sensorname': {
-            'name': f"{d['plant']['sensorname']}",
+            'name': f"Name",
         },
-        'date': {
-            'name': f"{d['plant']['sensorname']} Date",
-            'icon': 'mdi:calendar'
+        'Tgrow_HIGrow': {
+            'name': f"Mac-ID",
         },
-        'time': {
-            'name': f"{d['plant']['sensorname']} Time",
-            'icon': 'mdi:clock-outline', 
-            'frc_upd':True
+        'updated': {
+            'name': f"Updated",
+            'device_class': "timestamp", 
+            'icon': 'mdi:update'
         },
+        # 'date': {
+        #     'name': f"Date",
+        #     'icon': 'mdi:calendar'
+        # },
+        # 'time': {
+        #     'name': f"Time",
+        #     'icon': 'mdi:clock-outline', 
+        #     'frc_upd':True
+        # },
         'sleep5Count': {
-            'name': f"{d['plant']['sensorname']} Sleep5count",
+            'name': f"Sleep5count",
             'icon':'mdi:counter'
         }, 
         'bootCount': {
-            'name': f"{d['plant']['sensorname']} Bootcount",
+            'name': f"Bootcount",
             'icon':'mdi:counter'
         }, 
         'lux': {
-            'name': f"{d['plant']['sensorname']} Lux",
+            'name': f"Lux",
             'unit_of_meas': "Lumen", 
             'icon':'mdi:weather-sunny'
         }, 
         'temp': {
-            'name': f"{d['plant']['sensorname']} Temperature",
+            'name': f"Temperature",
             'unit_of_meas': "°C", 
+            'device_class': "temperature", 
             'icon':'mdi:thermometer'
         }, 
         'humid': {
-            'name': f"{d['plant']['sensorname']} Humidity",
+            'name': f"Humidity",
             'unit_of_meas': "%", 
+            'device_class': "humidity", 
             'icon':'mdi:water-percent'
         }, 
         'soil': {
-            'name': f"{d['plant']['sensorname']} Soil",
+            'name': f"Soil",
             'unit_of_meas': "%", 
             'icon':'mdi:water-percent'
         }, 
         'soilTemp': {
-            'name': f"{d['plant']['sensorname']} SoilTemp",
+            'name': f"SoilTemp",
             'unit_of_meas': "°C", 
+            'device_class': "temperature", 
             'icon':'mdi:thermometer'
         },
         'water': {
-            'name': f"{d['plant']['sensorname']} Water",
+            'name': f"Water",
             'unit_of_meas': "%", 
             'icon':'mdi:waves-arrow-up'
         }, 
         'salt': {
-            'name': f"{d['plant']['sensorname']} Fertilizer",
+            'name': f"Fertilizer",
             'unit_of_meas': "%", 
             'icon':'mdi:bottle-tonic'
         },
         'saltadvice': {
-            'name': f"{d['plant']['sensorname']} Fertilize state",
+            'name': f"Fertilize state",
             'icon':'mdi:alpha-i-circle-outline'
         },
         'bat': {
-            'name': f"{d['plant']['sensorname']} Battery",
+            'name': f"Battery",
             'unit_of_meas': "%", 
+            'device_class': "battery", 
             'icon':'mdi:battery'
         }, 
         'batcharge': {
-            'name': f"{d['plant']['sensorname']} Charging",
+            'name': f"Charging",
             'icon':'mdi:battery'
         }, 
         'batchargeDate': {
-            'name': f"{d['plant']['sensorname']} batchargeDate", 
+            'name': f"batchargeDate", 
             'icon':'mdi:calendar'
         }, 
         'daysOnBattery': {
-            'name': f"{d['plant']['sensorname']} daysOnBattery", 
+            'name': f"daysOnBattery", 
             'unit_of_meas': "days", 
             'icon':'mdi:calendar'
         }, 
         'wifissid': {
-            'name': f"{d['plant']['sensorname']} WIFI",
+            'name': f"WIFI",
             'icon':'mdi:wifi'
         }, 
         'pressure': {
-            'name': f"{d['plant']['sensorname']} Pressure",
+            'name': f"Pressure",
             'unit_of_meas': "Hpa", 
             'icon':'mdi:gauge'
         }, 
         'plantValveNo': {
-            'name': f"{d['plant']['sensorname']} plantValveNo",
+            'name': f"plantValveNo",
         }, 
         'rel': {
-            'name': f"{d['plant']['sensorname']} Release",
+            'name': f"Release",
             'icon':'mdi:counter'
         }, 
     }
