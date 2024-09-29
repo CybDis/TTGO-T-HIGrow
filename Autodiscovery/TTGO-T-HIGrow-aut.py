@@ -90,40 +90,54 @@ def send_discovery_topics(msg):
         }, 
         'lux': {
             'name': f"Lux",
-            'unit_of_meas': "Lumen", 
+            'unit_of_meas': "lx", 
+            'state_class': "measurement",
+            'device_class': "illuminance",
             'icon':'mdi:weather-sunny'
         }, 
         'temp': {
             'name': f"Temperature",
             'unit_of_meas': "°C", 
             'device_class': "temperature", 
+            'state_class': "measurement",
             'icon':'mdi:thermometer'
         }, 
         'humid': {
             'name': f"Humidity",
             'unit_of_meas': "%", 
             'device_class': "humidity", 
+            'state_class': "measurement",
             'icon':'mdi:water-percent'
         }, 
         'soil': {
             'name': f"Soil",
             'unit_of_meas': "%", 
-            'icon':'mdi:water-percent'
+            'icon':'mdi:raw',
+            'state_class': "measurement",
+            'device_class': 'moisture'
+        }, 
+        'soilRaw': {
+            'name': f"SoilRaw",
+            'icon':'mdi:water-percent',
+            'state_class': "measurement"
         }, 
         'soilTemp': {
             'name': f"SoilTemp",
             'unit_of_meas': "°C", 
             'device_class': "temperature", 
-            'icon':'mdi:thermometer'
+            'state_class': "measurement",
+            'icon':'mdi:thermometer',
         },
         'water': {
             'name': f"Water",
             'unit_of_meas': "%", 
+            'state_class': "measurement",
             'icon':'mdi:waves-arrow-up'
         }, 
         'salt': {
             'name': f"Fertilizer",
             'unit_of_meas': "%", 
+            'state_class': "measurement",
             'icon':'mdi:bottle-tonic'
         },
         'saltadvice': {
@@ -134,6 +148,7 @@ def send_discovery_topics(msg):
             'name': f"Battery",
             'unit_of_meas': "%", 
             'device_class': "battery", 
+            'state_class': "measurement",
             'icon':'mdi:battery'
         }, 
         'batcharge': {
@@ -156,6 +171,7 @@ def send_discovery_topics(msg):
         'pressure': {
             'name': f"Pressure",
             'unit_of_meas': "Hpa", 
+            'state_class': "measurement",
             'icon':'mdi:gauge'
         }, 
         'plantValveNo': {

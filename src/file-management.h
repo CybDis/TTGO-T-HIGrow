@@ -3,13 +3,13 @@ void writeFile(fs::FS & fs, const char * path, const char * message) {
 
   File file = fs.open(path, FILE_APPEND);
   if (!file) {
-    Serial.println("- failed to open file for writing");
+    Serial.println("  - failed to open file for writing");
     return;
   }
   if (file.print(message)) {
-    Serial.println("- file written");
+    Serial.println("  - file written");
   } else {
-    Serial.println("- frite failed");
+    Serial.println("  - frite failed");
   }
 }
 

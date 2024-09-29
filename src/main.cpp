@@ -46,14 +46,15 @@
 //           rel = "4.2.3"; // Removed the battery day counter - for good, use BeardedTingers solution if you need it.
 //           rel = "4.3.1"; // Finally the days since last charging works correctly.
 //           rel = "4.3.2"; // Corrected an error in DST.
-//           rel = "4.5.0"; // Soil limited to Min/Max 0/100% 
-//           rel = "4.5.1"; // Intervall to 2h 
+//           rel = "4.5.0"; // Soil limited to Min/Max 0/100%
+//           rel = "4.5.1"; // Intervall to 2h
 //           rel = "4.6.0"; // Included external water level sensor and optimized debug output
 //           rel = "4.6.1"; // Removed Date/Time and replaced with Updated (timestamp)
 //           rel = "4.6.2"; // ...
 //           rel = "4.6.3"; // Fixed limits (batt <0, soil not readable...)
-const String rel = "4.6.4"; // Removed obsolete DST code
-
+//           rel = "4.6.4"; // Removed obsolete DST code
+//           rel = "4.6.5"; // fixed unsigned integer on soil not readable, added 'soilRaw' reading
+const String rel = "4.6.6"; // read battery direkt on start of setup
 
 // mqtt constants
 WiFiClient wifiClient;
@@ -70,10 +71,10 @@ float daysOnBattery;
 RTC_DATA_ATTR int bootCount = 0;
 RTC_DATA_ATTR int sleep5no = 0;
 
-//Sensor bools
+// Sensor bools
 bool bme_found = false;
 
-//json construct setup
+// json construct setup
 struct Config
 {
   // String date;
@@ -85,6 +86,7 @@ struct Config
   float temp;
   float humid;
   float soil;
+  String soilRaw;
   float soilTemp;
   float water;
   float salt;
@@ -113,8 +115,8 @@ const int led = 13;
 #define USER_BUTTON 35
 #define DS18B20_PIN 21
 
-BH1750 lightMeter(0x23); //0x23
-Adafruit_BME280 bmp;     //0x77
+BH1750 lightMeter(0x23); // 0x23
+Adafruit_BME280 bmp;     // 0x77
 
 DHT dht(DHT_PIN, DHT_TYPE);
 DS18B20 temp18B20(DS18B20_PIN);
@@ -135,11 +137,18 @@ String dayStamp;
 
 void setup()
 {
+  //! Sensor power control pin, use deteced must set high
+  pinMode(POWER_CTRL, OUTPUT);
+  digitalWrite(POWER_CTRL, 1);
+  delay(1000);
+
   Serial.begin(115200);
   Serial.println("Void Setup");
 
+  float bat = readBattery();
+  
 #include <module-parameter-management.h>
-
+  
   // Start WiFi and update time
   connectToNetwork();
   Serial.println(" ");
@@ -174,11 +183,6 @@ void setup()
     Serial.println(F("Could not find a valid DHT sensor, check if there is one present on board!"));
   }
 
-  //! Sensor power control pin , use deteced must set high
-  pinMode(POWER_CTRL, OUTPUT);
-  digitalWrite(POWER_CTRL, 1);
-  delay(1000);
-
   bool wireOk = Wire.begin(I2C_SDA, I2C_SCL); // wire can not be initialized at beginng, the bus is busy
   if (wireOk)
   {
@@ -209,7 +213,7 @@ void setup()
   }
 
   float luxRead = lightMeter.readLightLevel(); // 1st read seems to return 0 always
-  Serial.print("  lux: ");
+  Serial.print("  lux first read is 0: ");
   Serial.println(luxRead);
   delay(2000);
 
@@ -234,8 +238,9 @@ void setup()
     config.pressure = bme_pressure;
   }
 
-  uint16_t soil = readSoil();
+  int16_t soil = readSoil();
   config.soil = soil;
+  config.soilRaw = soilRead;
   float soilTemp = readSoilTemp();
   config.soilTemp = soilTemp;
   Serial.print("Soil temp: ");
@@ -265,10 +270,9 @@ void setup()
   config.saltadvice = advice;
 
   // Battery status, and charging status and days.
-  float bat = readBattery();
   config.bat = bat;
   config.batcharge = "";
-  if (bat > 130)
+  if (bat > 120)
   {
     config.batcharge = "charging";
     SPIFFS.remove("/batinfo.conf");
@@ -276,7 +280,7 @@ void setup()
     battChargeEpoc = String(epochChargeTime) + ":" + String(dayStamp);
     const char *batinfo_write = battChargeEpoc.c_str();
     writeFile(SPIFFS, "/batinfo.conf", batinfo_write);
-    Serial.print("dayStamp: ");
+    Serial.print("charging dayStamp: ");
     Serial.println(dayStamp);
     config.batchargeDate = dayStamp;
   }
@@ -287,12 +291,11 @@ void setup()
   Serial.print("  Test Epoc: ");
   Serial.println(epochTime);
   epochChargeTime = battChargeEpoc.toInt();
-  Serial.print("  First calculation: ");
+  Serial.print("  First time calculation: ");
   Serial.println(epochTime - epochChargeTime);
   float epochTimeFl = float(epochTime);
-  float epochChargeTimeFl = float(epochChargeTime); 
-  
-
+  float epochChargeTimeFl = float(epochChargeTime);
+    
   daysOnBattery = (epochTimeFl - epochChargeTimeFl) / battChargeDateDivider;
   daysOnBattery = truncate(daysOnBattery, 1);
   config.daysOnBattery = daysOnBattery;
@@ -310,10 +313,9 @@ void setup()
   config.lux = luxRead;
   config.rel = rel;
 
-
   // Custom: Read water level
   config.water = readWaterLevel();
-  
+
   // Create JSON file
   Serial.println(F("Creating JSON document..."));
   if (logging)
@@ -323,11 +325,11 @@ void setup()
   saveConfiguration(config);
 
   // Go to sleep
-  //Increment boot number and print it every reboot
+  // Increment boot number and print it every reboot
   ++bootCount;
   Serial.println("Boot number: " + String(bootCount));
 
-  //Go to sleep now
+  // Go to sleep now
   delay(1000);
   goToDeepSleep();
 }
