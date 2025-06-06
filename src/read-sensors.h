@@ -1,5 +1,9 @@
 // READ Sensors
 
+// Raw ADC value for soil moisture sensor.
+// Exposed so main.cpp can store the unscaled reading.
+uint16_t soilRead = 0;
+
 // READ Salt
 // I am not quite sure how to read and use this number. I know that when put in water wich a DH value of 26, it gives a high number, but what it is and how to use ??????
 uint32_t readSalt()
@@ -30,10 +34,12 @@ uint32_t readSalt()
 // READ Soil
 int16_t readSoil()
 {
-  uint16_t soil = analogRead(SOIL_PIN);
+  // Keep the raw ADC value for debugging and for reporting through
+  // config.soilRaw in main.cpp.
+  soilRead = analogRead(SOIL_PIN);
   Serial.print("CALIBRATE ===================> Current soil reading: ");
-  Serial.print(soil);
-  int result = map(soil, soil_min, soil_max, 100, 0);
+  Serial.print(soilRead);
+  int result = map(soilRead, soil_min, soil_max, 100, 0);
   Serial.print(" - percent calculated: ");
   Serial.println(result);
 
@@ -42,7 +48,7 @@ int16_t readSoil()
   Serial.print(" Soil min (water): ");
   Serial.println(soil_min);
 
-  if (soil == 0) // ERROR
+  if (soilRead == 0) // ERROR
     return -1;
   if (result > 100)
     return 100;
