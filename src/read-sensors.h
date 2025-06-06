@@ -39,7 +39,7 @@ int16_t readSoil()
 
   Serial.print(" Soil max (air): ");
   Serial.println(soil_max);
-  Serial.print(" Sil min (water): ");
+  Serial.print(" Soil min (water): ");
   Serial.println(soil_min);
 
   if (soil == 0) // ERROR

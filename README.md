@@ -8,7 +8,7 @@
 
 ### Getting started
 
-Go to the [WIKI](https://github.com/pesor/TTGO-T-HIGrow/wiki), there you will find a comprehensive toturial to help you implement this card.
+Go to the [WIKI](https://github.com/pesor/TTGO-T-HIGrow/wiki), there you will find a comprehensive tutorial to help you implement this card.
 
 
 ## Disclaimer
