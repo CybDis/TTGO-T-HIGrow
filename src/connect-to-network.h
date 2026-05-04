@@ -60,6 +60,6 @@ void connectToNetwork()
   }
   if (WiFi.status() != WL_CONNECTED)
   {
-    goToDeepSleepFiveMinutes();
+    goToDeepSleep();
   }
 }

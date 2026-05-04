@@ -54,7 +54,10 @@
 //           rel = "4.6.3"; // Fixed limits (batt <0, soil not readable...)
 //           rel = "4.6.4"; // Removed obsolete DST code
 //           rel = "4.6.5"; // fixed unsigned integer on soil not readable, added 'soilRaw' reading
-const String rel = "4.6.6"; // read battery direkt on start of setup
+//           rel = "4.6.6"; // read battery direkt on start of setup
+//           rel = "4.6.7"; // external wake deactivated, as it is not working on HiGrow3, and we do not use it anyways
+//           rel = "4.7.0"; // removed external water level sensor
+const String rel = "5.0.0"; // MAJOR: Native Home Assistant Auto Discovery integration with ArduinoHA library, replaces external Python script dependency
 
 // mqtt constants
 WiFiClient wifiClient;
@@ -88,7 +91,6 @@ struct Config
   float soil;
   String soilRaw;
   float soilTemp;
-  float water;
   float salt;
   String saltadvice;
   float bat;
@@ -134,6 +136,7 @@ String dayStamp;
 #include <connect-to-network.h>
 #include <read-batt-info.h>
 #include <floatConv.h>
+#include <home-assistant-discovery.h>    // NEW v5.0.0: Home Assistant Auto Discovery functions
 
 void setup()
 {
@@ -215,6 +218,9 @@ void setup()
   float luxRead = lightMeter.readLightLevel(); // 1st read seems to return 0 always
   Serial.print("  lux first read is 0: ");
   Serial.println(luxRead);
+  
+  // wozu das delay?? weiß ich nimmer! lieber mal da lassen.
+  Serial.println("wait 2 seconds...");
   delay(2000);
 
   if (dht_found)
@@ -248,6 +254,9 @@ void setup()
 
   uint32_t salt = readSalt();
   config.salt = salt;
+  Serial.print("Salt (raw): ");
+  Serial.println(salt);
+  
   String advice;
   if (salt < 201)
   {
@@ -312,17 +321,23 @@ void setup()
   Serial.println(luxRead);
   config.lux = luxRead;
   config.rel = rel;
-
-  // Custom: Read water level
-  config.water = readWaterLevel();
-
-  // Create JSON file
-  Serial.println(F("Creating JSON document..."));
-  if (logging)
-  {
-    writeFile(SPIFFS, "/error.log", "Creating JSON document...! \n");
-  }
-  saveConfiguration(config);
+  
+  // *** NEW in v5.0.0: Native Home Assistant Auto Discovery Integration ***
+  // Setup Home Assistant Auto Discovery using ArduinoHA library
+  // This replaces the need for external Python script (TTGO-T-HiGrow-aut.py)
+  // All sensors are automatically discovered and configured in Home Assistant
+  sendDiscoveryTopic();
+  
+  // Wait for Home Assistant to process discovery topics
+  Serial.println(F("Waiting for Home Assistant to process discovery..."));
+  
+  // Update HA sensor values with current readings
+  // Sends all sensor data directly to Home Assistant via MQTT Discovery
+  updateHASensors(config);
+  
+  // Send traditional MQTT message (maintained for backward compatibility)
+  // This preserves existing MQTT subscriptions and external integrations
+  // saveConfiguration(config);
 
   // Go to sleep
   // Increment boot number and print it every reboot

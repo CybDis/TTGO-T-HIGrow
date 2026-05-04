@@ -14,9 +14,16 @@ void goToDeepSleep()
   WiFi.mode(WIFI_OFF);
   btStop();
 
+  Serial.println();
+  Serial.println("Zzzzz...");
+  Serial.flush();
+  delay(1000);
+
   // Configure the timer to wake us up!
   esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
-  esp_sleep_enable_ext1_wakeup(GPIO_SEL_35, ESP_EXT1_WAKEUP_ALL_LOW);
+  
+  // HiGrow3 ist defekt, so no external wakeup - we do not use it anyways
+  //esp_sleep_enable_ext1_wakeup(GPIO_SEL_35, ESP_EXT1_WAKEUP_ALL_LOW);
 
   // Testpurposes
   //esp_sleep_enable_timer_wakeup(10 * uS_TO_S_FACTOR);

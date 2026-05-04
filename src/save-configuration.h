@@ -14,7 +14,10 @@ String floatToString(float value) {
   }
 }
 
-// Allocate a  JsonDocument
+// External reference to ArduinoHA MQTT client (v5.0.0)
+extern PubSubClient mqttClient;
+
+// Allocate a JsonDocument
 void saveConfiguration(const Config & config) {
 
   byte mac[6];
@@ -31,6 +34,7 @@ void saveConfiguration(const Config & config) {
       chipId = chipId + String(mac[i], HEX);
     }
   }
+  
   Serial.println("  chipId: " + chipId);
   const String topicStr = device_name + "/" + chipId;
   const char* topic = topicStr.c_str();
@@ -54,8 +58,8 @@ void saveConfiguration(const Config & config) {
   plant["temp"] = floatToString(config.temp);
   plant["humid"] = floatToString(config.humid);
   plant["soil"] = floatToString(config.soil);
+  plant["soilRaw"] = config.soilRaw;
   plant["soilTemp"] = floatToString(config.soilTemp);
-  plant["water"] = floatToString(config.water);
   plant["salt"] = floatToString(config.salt);
   plant["saltadvice"] = config.saltadvice;
   plant["bat"] = floatToString(config.bat);
@@ -69,10 +73,9 @@ void saveConfiguration(const Config & config) {
   plant["wifissid"] = WiFi.SSID();
   plant["rel"] = config.rel;
 
-  // Send to mqtt
+  // Send to mqtt using ArduinoHA mqtt client (v5.0.0 - unified MQTT handling)
   char buffer[1536];
   serializeJson(doc, buffer);
-
 
   Serial.print("  Sending message to topic: ");
   if (logging) {
@@ -81,38 +84,18 @@ void saveConfiguration(const Config & config) {
 
   Serial.println(buffer);
 
-  // Connect to mqtt broker
-  Serial.print("Attempting to connect to the MQTT broker: ");
-  if (logging) {
-    writeFile(SPIFFS, "/error.log", "Attempting to connect to the MQTT broker! \n");
-  }
-
-  Serial.println(broker);
-  mqttClient.setServer(broker, port);
-
-  if (!mqttClient.connect(broker, mqttuser, mqttpass)) {
-    if (logging) {
-      writeFile(SPIFFS, "/error.log", "MQTT connection failed! \n");
-    }
-
-    Serial.print("MQTT connection failed! Error code = ");
-    Serial.println(mqttClient.state());
-    goToDeepSleepFiveMinutes();
-  }
-
-  if (logging) {
-    writeFile(SPIFFS, "/error.log", "You're connected to the MQTT broker! \n");
-  }
-
-  Serial.println("You're connected to the MQTT broker! Publishing...");
+  // Use ArduinoHA MQTT client instead of separate PubSubClient
+  Serial.println("  Publishing via ArduinoHA MQTT client...");
   
+  // The ArduinoHA mqtt client is already connected from sendDiscoveryTopic()
+  // We can publish directly to the legacy topic for backward compatibility
   bool retained = true;
 
   if (mqttClient.publish(topic, buffer, retained)) {
-    Serial.println("Message published successfully");
+    Serial.println("  Message published successfully via ArduinoHA");
   } else {
-    Serial.println("Error in Message, not published");
-    goToDeepSleepFiveMinutes();
+    Serial.println("  Error in Message, not published via ArduinoHA");
+    goToDeepSleep();
   }
   Serial.println();
 }
