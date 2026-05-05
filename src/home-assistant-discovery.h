@@ -110,12 +110,16 @@ void sendDiscoveryTopic() {
   globalSlp5Id = "TTGO_" + chipId + "_sleep5Count";
   sensorSleep5Count = new HASensor(globalSlp5Id.c_str());
   sensorSleep5Count->setName("Sleep5count");
+  sensorSleep5Count->setUnitOfMeasurement("count");
   sensorSleep5Count->setIcon("mdi:counter");
-  
+  sensorSleep5Count->setStateClass("total_increasing");
+
   globalBootId = "TTGO_" + chipId + "_bootCount";
   sensorBootCount = new HASensor(globalBootId.c_str());
   sensorBootCount->setName("Bootcount");
+  sensorBootCount->setUnitOfMeasurement("count");
   sensorBootCount->setIcon("mdi:counter");
+  sensorBootCount->setStateClass("total_increasing");
   
   globalLuxId = "TTGO_" + chipId + "_lux";
   sensorLux = new HASensor(globalLuxId.c_str());
@@ -123,46 +127,53 @@ void sendDiscoveryTopic() {
   sensorLux->setUnitOfMeasurement("lx");
   sensorLux->setDeviceClass("illuminance");
   sensorLux->setIcon("mdi:weather-sunny");
-  
+  sensorLux->setStateClass("measurement");
+
   globalTempId = "TTGO_" + chipId + "_temp";
   sensorTemp = new HASensor(globalTempId.c_str());
   sensorTemp->setName("Temperature");
   sensorTemp->setUnitOfMeasurement("°C");
   sensorTemp->setDeviceClass("temperature");
   sensorTemp->setIcon("mdi:thermometer");
-  
+  sensorTemp->setStateClass("measurement");
+
   globalHumId = "TTGO_" + chipId + "_humid";
   sensorHumid = new HASensor(globalHumId.c_str());
   sensorHumid->setName("Humidity");
   sensorHumid->setUnitOfMeasurement("%");
   sensorHumid->setDeviceClass("humidity");
   sensorHumid->setIcon("mdi:water-percent");
-  
+  sensorHumid->setStateClass("measurement");
+
   globalSoilId = "TTGO_" + chipId + "_soil";
   sensorSoil = new HASensor(globalSoilId.c_str());
   sensorSoil->setName("Soil");
   sensorSoil->setUnitOfMeasurement("%");
   sensorSoil->setDeviceClass("moisture");
   sensorSoil->setIcon("mdi:water-percent");
-  
+  sensorSoil->setStateClass("measurement");
+
   globalSoilRawId = "TTGO_" + chipId + "_soilRaw";
   sensorSoilRaw = new HASensor(globalSoilRawId.c_str());
   sensorSoilRaw->setName("SoilRaw");
   sensorSoilRaw->setIcon("mdi:raw");
-  
+  sensorSoilRaw->setStateClass("measurement");
+
   globalSoilTempId = "TTGO_" + chipId + "_soilTemp";
   sensorSoilTemp = new HASensor(globalSoilTempId.c_str());
   sensorSoilTemp->setName("SoilTemp");
   sensorSoilTemp->setUnitOfMeasurement("°C");
   sensorSoilTemp->setDeviceClass("temperature");
   sensorSoilTemp->setIcon("mdi:thermometer");
-  
+  sensorSoilTemp->setStateClass("measurement");
+
   globalSaltId = "TTGO_" + chipId + "_salt";
   sensorSalt = new HASensor(globalSaltId.c_str());
   sensorSalt->setName("Fertilizer");
   sensorSalt->setUnitOfMeasurement("%");
   sensorSalt->setIcon("mdi:bottle-tonic");
-  
+  sensorSalt->setStateClass("measurement");
+
   globalSaltAdvId = "TTGO_" + chipId + "_saltadvice";
   sensorSaltAdvice = new HASensor(globalSaltAdvId.c_str());
   sensorSaltAdvice->setName("Fertilize state");
@@ -174,7 +185,8 @@ void sendDiscoveryTopic() {
   sensorBat->setUnitOfMeasurement("%");
   sensorBat->setDeviceClass("battery");
   sensorBat->setIcon("mdi:battery");
-  
+  sensorBat->setStateClass("measurement");
+
   globalBatChargeId = "TTGO_" + chipId + "_batcharge";
   sensorBatCharge = new HASensor(globalBatChargeId.c_str());
   sensorBatCharge->setName("Charging");
@@ -190,12 +202,15 @@ void sendDiscoveryTopic() {
   sensorDaysOnBattery->setName("daysOnBattery");
   sensorDaysOnBattery->setUnitOfMeasurement("days");
   sensorDaysOnBattery->setIcon("mdi:calendar");
-  
+  sensorDaysOnBattery->setStateClass("total_increasing");
+
   globalPressId = "TTGO_" + chipId + "_pressure";
   sensorPressure = new HASensor(globalPressId.c_str());
   sensorPressure->setName("Pressure");
-  sensorPressure->setUnitOfMeasurement("Hpa");
+  sensorPressure->setUnitOfMeasurement("hPa");
+  sensorPressure->setDeviceClass("pressure");
   sensorPressure->setIcon("mdi:gauge");
+  sensorPressure->setStateClass("measurement");
   
   globalWifiId = "TTGO_" + chipId + "_wifissid";
   sensorWifiSSID = new HASensor(globalWifiId.c_str());
