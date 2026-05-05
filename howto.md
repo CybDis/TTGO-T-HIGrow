@@ -15,7 +15,7 @@ This project enables the LilyGo T-Higrow plant monitoring sensor to communicate 
 ### Software
 - **VSCode** with **PlatformIO** extension (recommended)
   - Or use **Arduino IDE** (v1.8.12 or later) as alternative
-- **Windows 10**, macOS, or Linux
+- **Windows 11**, macOS, or Linux
 - **MQTT broker** (e.g., Mosquitto)
 
 ## Development Environment Setup
