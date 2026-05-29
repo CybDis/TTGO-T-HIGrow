@@ -106,6 +106,7 @@ void sendDiscoveryTopic() {
   sensorUpdated->setName("Updated");
   sensorUpdated->setDeviceClass("timestamp");
   sensorUpdated->setIcon("mdi:update");
+  sensorUpdated->setForceUpdate(true);
   
   globalSlp5Id = "TTGO_" + chipId + "_sleep5Count";
   sensorSleep5Count = new HASensor(globalSlp5Id.c_str());
@@ -120,6 +121,7 @@ void sendDiscoveryTopic() {
   sensorBootCount->setUnitOfMeasurement("count");
   sensorBootCount->setIcon("mdi:counter");
   sensorBootCount->setStateClass("total_increasing");
+  sensorBootCount->setForceUpdate(true);
   
   globalLuxId = "TTGO_" + chipId + "_lux";
   sensorLux = new HASensor(globalLuxId.c_str());
@@ -128,6 +130,7 @@ void sendDiscoveryTopic() {
   sensorLux->setDeviceClass("illuminance");
   sensorLux->setIcon("mdi:weather-sunny");
   sensorLux->setStateClass("measurement");
+  sensorLux->setForceUpdate(true);
 
   globalTempId = "TTGO_" + chipId + "_temp";
   sensorTemp = new HASensor(globalTempId.c_str());
@@ -136,6 +139,7 @@ void sendDiscoveryTopic() {
   sensorTemp->setDeviceClass("temperature");
   sensorTemp->setIcon("mdi:thermometer");
   sensorTemp->setStateClass("measurement");
+  sensorTemp->setForceUpdate(true);
 
   globalHumId = "TTGO_" + chipId + "_humid";
   sensorHumid = new HASensor(globalHumId.c_str());
@@ -144,6 +148,7 @@ void sendDiscoveryTopic() {
   sensorHumid->setDeviceClass("humidity");
   sensorHumid->setIcon("mdi:water-percent");
   sensorHumid->setStateClass("measurement");
+  sensorHumid->setForceUpdate(true);
 
   globalSoilId = "TTGO_" + chipId + "_soil";
   sensorSoil = new HASensor(globalSoilId.c_str());
@@ -152,12 +157,14 @@ void sendDiscoveryTopic() {
   sensorSoil->setDeviceClass("moisture");
   sensorSoil->setIcon("mdi:water-percent");
   sensorSoil->setStateClass("measurement");
+  sensorSoil->setForceUpdate(true);
 
   globalSoilRawId = "TTGO_" + chipId + "_soilRaw";
   sensorSoilRaw = new HASensor(globalSoilRawId.c_str());
   sensorSoilRaw->setName("SoilRaw");
   sensorSoilRaw->setIcon("mdi:raw");
   sensorSoilRaw->setStateClass("measurement");
+  sensorSoilRaw->setForceUpdate(true);
 
   globalSoilTempId = "TTGO_" + chipId + "_soilTemp";
   sensorSoilTemp = new HASensor(globalSoilTempId.c_str());
@@ -166,6 +173,7 @@ void sendDiscoveryTopic() {
   sensorSoilTemp->setDeviceClass("temperature");
   sensorSoilTemp->setIcon("mdi:thermometer");
   sensorSoilTemp->setStateClass("measurement");
+  sensorSoilTemp->setForceUpdate(true);
 
   globalSaltId = "TTGO_" + chipId + "_salt";
   sensorSalt = new HASensor(globalSaltId.c_str());
@@ -173,11 +181,13 @@ void sendDiscoveryTopic() {
   sensorSalt->setUnitOfMeasurement("%");
   sensorSalt->setIcon("mdi:bottle-tonic");
   sensorSalt->setStateClass("measurement");
+  sensorSalt->setForceUpdate(true);
 
   globalSaltAdvId = "TTGO_" + chipId + "_saltadvice";
   sensorSaltAdvice = new HASensor(globalSaltAdvId.c_str());
   sensorSaltAdvice->setName("Fertilize state");
   sensorSaltAdvice->setIcon("mdi:alpha-i-circle-outline");
+  sensorSaltAdvice->setForceUpdate(true);
   
   globalBatId = "TTGO_" + chipId + "_bat";
   sensorBat = new HASensor(globalBatId.c_str());
@@ -186,6 +196,7 @@ void sendDiscoveryTopic() {
   sensorBat->setDeviceClass("battery");
   sensorBat->setIcon("mdi:battery");
   sensorBat->setStateClass("measurement");
+  sensorBat->setForceUpdate(true);
 
   globalBatChargeId = "TTGO_" + chipId + "_batcharge";
   sensorBatCharge = new HASensor(globalBatChargeId.c_str());
@@ -196,6 +207,7 @@ void sendDiscoveryTopic() {
   sensorBatChargeDate = new HASensor(globalBatChargeDateId.c_str());
   sensorBatChargeDate->setName("batchargeDate");
   sensorBatChargeDate->setIcon("mdi:calendar");
+  sensorBatChargeDate->setForceUpdate(true);
   
   globalDaysId = "TTGO_" + chipId + "_daysOnBattery";
   sensorDaysOnBattery = new HASensor(globalDaysId.c_str());
@@ -203,6 +215,7 @@ void sendDiscoveryTopic() {
   sensorDaysOnBattery->setUnitOfMeasurement("days");
   sensorDaysOnBattery->setIcon("mdi:calendar");
   sensorDaysOnBattery->setStateClass("total_increasing");
+  sensorDaysOnBattery->setForceUpdate(true);
 
   globalPressId = "TTGO_" + chipId + "_pressure";
   sensorPressure = new HASensor(globalPressId.c_str());
@@ -211,6 +224,7 @@ void sendDiscoveryTopic() {
   sensorPressure->setDeviceClass("pressure");
   sensorPressure->setIcon("mdi:gauge");
   sensorPressure->setStateClass("measurement");
+  sensorPressure->setForceUpdate(true);
   
   globalWifiId = "TTGO_" + chipId + "_wifissid";
   sensorWifiSSID = new HASensor(globalWifiId.c_str());
@@ -225,6 +239,7 @@ void sendDiscoveryTopic() {
   sensorRelease = new HASensor(globalRelId.c_str());
   sensorRelease->setName("Release");
   sensorRelease->setIcon("mdi:counter");
+  sensorRelease->setForceUpdate(true);
   
   Serial.println(F("Home Assistant Auto Discovery setup complete"));
 }

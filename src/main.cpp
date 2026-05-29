@@ -58,7 +58,8 @@
 //           rel = "4.6.7"; // external wake deactivated, as it is not working on HiGrow3, and we do not use it anyways
 //           rel = "4.7.0"; // removed external water level sensor
 //           rel = "5.0.0"; // MAJOR: Native Home Assistant Auto Discovery integration with ArduinoHA library, replaces external Python script dependency
-const String rel = "5.0.1"; // Add state_class (measurement/total_increasing) to all HA Discovery payloads; unit "count" for boot-/sleep5Count; fix pressure unit Hpa→hPa + device_class
+//           rel = "5.0.1"; // Add state_class (measurement/total_increasing) to all HA Discovery payloads; unit "count" for boot-/sleep5Count; fix pressure unit Hpa→hPa + device_class
+const String rel = "5.1.0"; // Enable force_update on all measurement sensors in HA Discovery so last_changed updates even when value stays the same
 
 // mqtt constants
 WiFiClient wifiClient;
