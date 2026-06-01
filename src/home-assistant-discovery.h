@@ -241,7 +241,7 @@ void sendDiscoveryTopic() {
   sensorRelease->setIcon("mdi:counter");
   sensorRelease->setForceUpdate(true);
   
-  Serial.println(F("Home Assistant Auto Discovery setup complete"));
+  Serial.println(F("   Home Assistant Auto Discovery setup complete"));
 }
 
 void updateHASensors(const Config& config) {
@@ -299,4 +299,6 @@ void updateHASensors(const Config& config) {
   
   // Process MQTT updates
   mqtt.loop();
+
+  Serial.println(F("MQTT update sent."));
 }

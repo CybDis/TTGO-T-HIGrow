@@ -2,8 +2,9 @@
 // Read battery charging info
 void read_batt_info()
 {
+    Serial.println("Reading /batinfo.conf");
     readFile(SPIFFS, "/batinfo.conf");
-    Serial.print("Here comes the charge date info info: ");
+    Serial.print("   Charge date info: ");
     Serial.println(readString);
 
     battChargeEpoc = getValue(readString, ':', 0);

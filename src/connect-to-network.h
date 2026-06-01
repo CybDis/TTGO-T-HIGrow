@@ -1,6 +1,6 @@
 void connectToNetwork()
 {
-  Serial.print("Size of SSID array ");
+  Serial.print("Startign WiFi. Size of SSID array ");
   Serial.println(ssidArrNo);
   const char *Hostname = plant_name.c_str();
   WiFi.mode(WIFI_AP); // Workaround: Setting Hostname works only in AP mode
@@ -19,9 +19,9 @@ void connectToNetwork()
   for (int i = 0; i < ssidArrNo; i++)
   {
     ssid = ssidArr[i].c_str();
-    Serial.print("SSID name: ");
+    Serial.print(" SSID name: ");
     Serial.println(ssidArr[i]);
-    Serial.print("Connecting");
+    Serial.print(" Connecting");
 
     while (WiFi.status() != WL_CONNECTED)
     {

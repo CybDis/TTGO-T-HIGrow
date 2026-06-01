@@ -14,11 +14,9 @@ void goToDeepSleep()
   WiFi.mode(WIFI_OFF);
   btStop();
 
-  Serial.println();
   Serial.println("Zzzzz...");
-  Serial.flush();
-  delay(1000);
-
+  Serial.flush(true);
+  
   // Configure the timer to wake us up!
   esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
   

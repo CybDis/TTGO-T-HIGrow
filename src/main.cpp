@@ -60,7 +60,8 @@
 //           rel = "5.0.0"; // MAJOR: Native Home Assistant Auto Discovery integration with ArduinoHA library, replaces external Python script dependency
 //           rel = "5.0.1"; // Add state_class (measurement/total_increasing) to all HA Discovery payloads; unit "count" for boot-/sleep5Count; fix pressure unit Hpa→hPa + device_class
 //           rel = "5.1.0"; // Enable force_update on all measurement sensors in HA Discovery so last_changed updates even when value stays the same
-const String rel = "5.2.0"; // Local-Only no-internet-mode supported by using IP of local ntp server, e.g. Fritzbox.
+//           rel = "5.2.0"; // Local-Only no-internet-mode supported by using IP of local ntp server, e.g. Fritzbox.
+const String rel = "5.2.1"; // Uptimized local serial output for debugging purposes
 
 // mqtt constants
 WiFiClient wifiClient;
@@ -149,8 +150,9 @@ void setup()
   delay(1000);
 
   Serial.begin(115200);
-  Serial.println("Void Setup");
-
+  Serial.println("Starting setup...");
+  Serial.println();
+  
   float bat = readBattery();
   
   // Initialize SPIFFS and manage saved parameters from user variables
@@ -199,8 +201,9 @@ void setup()
   }
   else
   {
+    Serial.println("Reading /soil.conf");
     readFile(SPIFFS, "/soil.conf");
-    Serial.print("Here comes the calibration info: ");
+    Serial.print("   Persisted calibration info: ");
     Serial.println(readString);
     String xval = getValue(readString, ':', 0);
     String yval = getValue(readString, ':', 1);
@@ -219,12 +222,13 @@ void setup()
   }
   else
   {
+    Serial.println("Reading /name.conf");
     readFile(SPIFFS, "/name.conf");
     plant_name = readString;
     readString = "";
   }
 
-  Serial.print("Persisted plant name: ");
+  Serial.print("   Persisted plant name: ");
   Serial.println(plant_name);
 
   pinMode(led, OUTPUT);
@@ -274,6 +278,8 @@ void setup()
     Serial.println(ntpServer);
   }
 
+  // DEBUG: Start NTP synchronization
+  Serial.println(F("\n  [NTP] Starting time synchronization..."));
   unsigned long ntpStart = millis();
   bool ntpOk = false;
   while (millis() - ntpStart < 20000UL)
@@ -281,13 +287,20 @@ void setup()
     if (timeClient->update())
     {
       ntpOk = true;
+      unsigned long ntpDuration = millis() - ntpStart;
+      Serial.print(F("  [NTP] SUCCESS after "));
+      Serial.print(ntpDuration);
+      Serial.println(F("ms"));
       break;
     }
     timeClient->forceUpdate();
   }
   if (!ntpOk)
   {
-    Serial.println(F("NTP update failed after 20s, continuing without time sync"));
+    unsigned long ntpDuration = millis() - ntpStart;
+    Serial.print(F("  [NTP] TIMEOUT after "));
+    Serial.print(ntpDuration);
+    Serial.println(F("ms - continuing without time sync"));
   }
 
   // The formattedDate comes with the following format:
@@ -341,12 +354,12 @@ void setup()
   }
 
   float luxRead = lightMeter.readLightLevel(); // 1st read seems to return 0 always
-  Serial.print("  lux first read is 0: ");
-  Serial.println(luxRead);
+  // Serial.print("  lux first read is 0: ");
+  // Serial.println(luxRead);
   
-  // wozu das delay?? weiß ich nimmer! lieber mal da lassen.
-  Serial.println("wait 2 seconds...");
-  delay(2000);
+  // // wozu das delay?? weiß ich nimmer! lieber mal da lassen.
+  // Serial.println("wait 2 seconds...");
+  // delay(2000);
 
   if (dht_found)
   {
@@ -453,9 +466,6 @@ void setup()
   // All sensors are automatically discovered and configured in Home Assistant
   sendDiscoveryTopic();
   
-  // Wait for Home Assistant to process discovery topics
-  Serial.println(F("Waiting for Home Assistant to process discovery..."));
-  
   // Update HA sensor values with current readings
   // Sends all sensor data directly to Home Assistant via MQTT Discovery
   updateHASensors(config);
@@ -467,10 +477,12 @@ void setup()
   // Go to sleep
   // Increment boot number and print it every reboot
   ++bootCount;
-  Serial.println("Boot number: " + String(bootCount));
+  Serial.println();
+  Serial.print(plant_name);
+  Serial.println(" Boot number: " + String(bootCount));
 
   // Go to sleep now
-  delay(1000);
+  delay(200);
   goToDeepSleep();
 }
 

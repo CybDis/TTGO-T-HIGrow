@@ -90,7 +90,7 @@ float readSoilTemp()
 // READ Battery
 float readBattery()
 {
-  Serial.println("Reading battery... ");
+  Serial.println("Reading battery:");
   int vref = 1100;
   uint16_t volt = analogRead(BAT_ADC);
   Serial.print("  Volt direct: ");
