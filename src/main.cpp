@@ -174,7 +174,8 @@ void setup()
   Serial.println(WiFi.getHostname());
 
   IPAddress ntpServerIPAddress;
-  if (strlen(ntpServerIp) > 0 && ntpServerIPAddress.fromString(ntpServerIp))
+  bool hasNtpServerIp = strlen(ntpServerIp) > 0;
+  if (hasNtpServerIp && ntpServerIPAddress.fromString(ntpServerIp))
   {
     timeClient = new NTPClient(ntpUDP, ntpServerIPAddress);
     Serial.print(F("  Using local NTP IP: "));
@@ -182,7 +183,7 @@ void setup()
   }
   else
   {
-    if (strlen(ntpServerIp) > 0)
+    if (hasNtpServerIp)
     {
       Serial.print(F("Invalid ntpServerIp, falling back to hostname: "));
       Serial.println(ntpServerIp);
