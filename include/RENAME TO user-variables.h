@@ -29,7 +29,8 @@ String ssidArr[] = {"Wifi1", "Wifi2", "BackupWifi" };
 const char* ssid = ""; // no need to fill in
 const char* password = "password";
 int ssidArrNo = 1;
-const char* ntpServer = "pool.ntp.org";
+const char* ntpServer = "pool.ntp.org"; // NTP hostname, used only if ntpServerIp is empty
+const char* ntpServerIp = ""; // Local NTP server IP; avoids DNS/internet dependency if set. Recommended: use your Fritzbox as local NTP server.
 
 // Device configuration and name setting
 const String device_name = "Tgrow_HIGrow"; // Can be changed, but not necessary, as it will give no added value.

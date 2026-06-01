@@ -48,6 +48,19 @@ NTPClient::NTPClient(UDP& udp, const char* poolServerName, int timeOffset, int u
   this->_updateInterval = updateInterval;
 }
 
+NTPClient::NTPClient(UDP& udp, IPAddress poolServerIp) {
+  this->_udp            = &udp;
+  this->_poolServerIp   = poolServerIp;
+  this->_usePoolServerIp = true;
+}
+
+NTPClient::NTPClient(UDP& udp, IPAddress poolServerIp, int timeOffset) {
+  this->_udp            = &udp;
+  this->_timeOffset     = timeOffset;
+  this->_poolServerIp   = poolServerIp;
+  this->_usePoolServerIp = true;
+}
+
 void NTPClient::begin() {
   this->begin(NTP_DEFAULT_LOCAL_PORT);
 }
@@ -193,7 +206,14 @@ void NTPClient::sendNTPPacket() {
 
   // all NTP fields have been given values, now
   // you can send a packet requesting a timestamp:
-  this->_udp->beginPacket(this->_poolServerName, 123); //NTP requests are to port 123
+  if (this->_usePoolServerIp)
+  {
+    this->_udp->beginPacket(this->_poolServerIp, 123);
+  }
+  else
+  {
+    this->_udp->beginPacket(this->_poolServerName, 123); //NTP requests are to port 123
+  }
   this->_udp->write(this->_packetBuffer, NTP_PACKET_SIZE);
   this->_udp->endPacket();
 }
