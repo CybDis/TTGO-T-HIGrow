@@ -1,7 +1,7 @@
   
   // The formattedDate comes with the following format:
   // 2018-05-28T16:00:13Z
-  String formattedDate = timeClient.getFormattedDate();
+  String formattedDate = timeClient->getFormattedDate();
   config.updated = formattedDate;
   
   // We need to extract date and time

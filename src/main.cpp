@@ -59,7 +59,8 @@
 //           rel = "4.7.0"; // removed external water level sensor
 //           rel = "5.0.0"; // MAJOR: Native Home Assistant Auto Discovery integration with ArduinoHA library, replaces external Python script dependency
 //           rel = "5.0.1"; // Add state_class (measurement/total_increasing) to all HA Discovery payloads; unit "count" for boot-/sleep5Count; fix pressure unit Hpa→hPa + device_class
-const String rel = "5.1.0"; // Enable force_update on all measurement sensors in HA Discovery so last_changed updates even when value stays the same
+//           rel = "5.1.0"; // Enable force_update on all measurement sensors in HA Discovery so last_changed updates even when value stays the same
+const String rel = "5.2.0"; // Local-Only no-internet-mode supported by using IP of local ntp server, e.g. Fritzbox.
 
 // mqtt constants
 WiFiClient wifiClient;
@@ -126,7 +127,7 @@ DHT dht(DHT_PIN, DHT_TYPE);
 DS18B20 temp18B20(DS18B20_PIN);
 
 WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP);
+NTPClient* timeClient = nullptr;
 String dayStamp;
 
 // Start Subroutines
@@ -172,9 +173,39 @@ void setup()
   Serial.print("  Hostname: ");
   Serial.println(WiFi.getHostname());
 
-  while (!timeClient.update())
+  IPAddress ntpServerIPAddress;
+  if (strlen(ntpServerIp) > 0 && ntpServerIPAddress.fromString(ntpServerIp))
   {
-    timeClient.forceUpdate();
+    timeClient = new NTPClient(ntpUDP, ntpServerIPAddress);
+    Serial.print(F("  Using local NTP IP: "));
+    Serial.println(ntpServerIp);
+  }
+  else
+  {
+    if (strlen(ntpServerIp) > 0)
+    {
+      Serial.print(F("Invalid ntpServerIp, falling back to hostname: "));
+      Serial.println(ntpServerIp);
+    }
+    timeClient = new NTPClient(ntpUDP, ntpServer);
+    Serial.print(F("  Using NTP server: "));
+    Serial.println(ntpServer);
+  }
+
+  unsigned long ntpStart = millis();
+  bool ntpOk = false;
+  while (millis() - ntpStart < 20000UL)
+  {
+    if (timeClient->update())
+    {
+      ntpOk = true;
+      break;
+    }
+    timeClient->forceUpdate();
+  }
+  if (!ntpOk)
+  {
+    Serial.println(F("NTP update failed after 20s, continuing without time sync"));
   }
 
 #include <time-management.h>
@@ -287,7 +318,7 @@ void setup()
   {
     config.batcharge = "charging";
     SPIFFS.remove("/batinfo.conf");
-    epochChargeTime = timeClient.getEpochTime();
+    epochChargeTime = timeClient->getEpochTime();
     battChargeEpoc = String(epochChargeTime) + ":" + String(dayStamp);
     const char *batinfo_write = battChargeEpoc.c_str();
     writeFile(SPIFFS, "/batinfo.conf", batinfo_write);
@@ -298,7 +329,7 @@ void setup()
 
   Serial.print("Charge Epoc: ");
   Serial.println(battChargeEpoc);
-  unsigned long epochTime = timeClient.getEpochTime();
+  unsigned long epochTime = timeClient->getEpochTime();
   Serial.print("  Test Epoc: ");
   Serial.println(epochTime);
   epochChargeTime = battChargeEpoc.toInt();
