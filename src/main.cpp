@@ -153,7 +153,88 @@ void setup()
 
   float bat = readBattery();
   
-#include <module-parameter-management.h>
+  // Initialize SPIFFS and manage saved parameters from user variables
+  if (!SPIFFS.begin(true))
+  {
+    Serial.println("An Error has occurred while mounting SPIFFS");
+    if (logging)
+    {
+      writeFile(SPIFFS, "/error.log", "An Error has occurred while mounting SPIFFS \n");
+    }
+    return;
+  }
+  if (logging)
+  {
+    writeFile(SPIFFS, "/error.log", "Void Setup \n");
+  }
+
+  listDir(SPIFFS, "/", 0);
+
+  if (logging)
+  {
+    writeFile(SPIFFS, "/error.log", "After listDir \n");
+  }
+
+  if (readLogfile)
+  {
+    // Now we start reading the files..
+    readFile(SPIFFS, "/error.log");
+    Serial.println("Here STARTS the logging info:");
+    Serial.println(readString);
+    Serial.println("Here ENDS the logging info:");
+  }
+
+  if (deleteLogfile)
+  {
+    SPIFFS.remove("/error.log");
+  }
+
+  // Calibrate soil figures save to file, if calibrate_soil == true
+  if (calibrate_soil)
+  {
+    SPIFFS.remove("/soil.conf");
+    String soil_write_str = String(soil_min) + ":" + String(soil_max);
+    const char *soil_write = soil_write_str.c_str();
+    writeFile(SPIFFS, "/soil.conf", soil_write);
+  }
+  else
+  {
+    readFile(SPIFFS, "/soil.conf");
+    Serial.print("Here comes the calibration info: ");
+    Serial.println(readString);
+    String xval = getValue(readString, ':', 0);
+    String yval = getValue(readString, ':', 1);
+
+    soil_min = xval.toInt();
+    soil_max = yval.toInt();
+    readString = "";
+  }
+
+  if (update_plant_name)
+  {
+    SPIFFS.remove("/name.conf");
+    String name_write_str = plant_name;
+    const char *name_write = name_write_str.c_str();
+    writeFile(SPIFFS, "/name.conf", name_write);
+  }
+  else
+  {
+    readFile(SPIFFS, "/name.conf");
+    plant_name = readString;
+    readString = "";
+  }
+
+  Serial.print("Persisted plant name: ");
+  Serial.println(plant_name);
+
+  pinMode(led, OUTPUT);
+  digitalWrite(led, 0);
+  if (logging)
+  {
+    writeFile(SPIFFS, "/error.log", "Before Start WIFI \n");
+  }
+
+  read_batt_info();
   
   // Start WiFi and update time
   connectToNetwork();
@@ -209,7 +290,17 @@ void setup()
     Serial.println(F("NTP update failed after 20s, continuing without time sync"));
   }
 
-#include <time-management.h>
+  // The formattedDate comes with the following format:
+  // 2018-05-28T16:00:13Z
+  String formattedDate = timeClient->getFormattedDate();
+  config.updated = formattedDate;
+
+  // We need to extract date and time
+  // Extract date
+  int splitT = formattedDate.indexOf("T");
+  dayStamp = formattedDate.substring(0, splitT);
+  dayStamp = dayStamp.substring(5);
+
   //#include <battChargeDays.h>
   if (dht_found)
   {
