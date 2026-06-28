@@ -61,7 +61,8 @@
 //           rel = "5.0.1"; // Add state_class (measurement/total_increasing) to all HA Discovery payloads; unit "count" for boot-/sleep5Count; fix pressure unit Hpa→hPa + device_class
 //           rel = "5.1.0"; // Enable force_update on all measurement sensors in HA Discovery so last_changed updates even when value stays the same
 //           rel = "5.2.0"; // Local-Only no-internet-mode supported by using IP of local ntp server, e.g. Fritzbox.
-const String rel = "5.2.1"; // Uptimized local serial output for debugging purposes
+//           rel = "5.2.1"; // Optimized serial debug outputs and removed unnecessary sleeps
+const String rel = "5.3.0"; // Charging mode: sleep reduced to 5 minutes while charging. Removed SoulTemp as there is no sensor for it. Sending SoilCalibration value to compare to SoilRaw when on battery and measurements are strange
 
 // mqtt constants
 WiFiClient wifiClient;
@@ -94,7 +95,7 @@ struct Config
   float humid;
   float soil;
   String soilRaw;
-  float soilTemp;
+  String soilCalibration;
   float salt;
   String saltadvice;
   float bat;
@@ -196,6 +197,7 @@ void setup()
   {
     SPIFFS.remove("/soil.conf");
     String soil_write_str = String(soil_min) + ":" + String(soil_max);
+    config.soilCalibration = soil_write_str;
     const char *soil_write = soil_write_str.c_str();
     writeFile(SPIFFS, "/soil.conf", soil_write);
   }
@@ -210,6 +212,7 @@ void setup()
 
     soil_min = xval.toInt();
     soil_max = yval.toInt();
+    config.soilCalibration = xval + ":" + yval;
     readString = "";
   }
 
@@ -385,11 +388,6 @@ void setup()
   int16_t soil = readSoil();
   config.soil = soil;
   config.soilRaw = soilRead;
-  float soilTemp = readSoilTemp();
-  config.soilTemp = soilTemp;
-  Serial.print("Soil temp: ");
-  Serial.println(soilTemp);
-
   uint32_t salt = readSalt();
   config.salt = salt;
   Serial.print("Salt (raw): ");
@@ -483,7 +481,8 @@ void setup()
 
   // Go to sleep now
   delay(200);
-  goToDeepSleep();
+  uint32_t sleepTime = (config.batcharge == "charging") ? 300 : TIME_TO_SLEEP;
+  goToDeepSleep(sleepTime);
 }
 
 void loop()

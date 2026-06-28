@@ -71,22 +71,6 @@ int16_t readSoil()
   return result;
 }
 
-float readSoilTemp()
-{
-  float temp;
-  // READ Soil Temperature
-  if (USE_18B20_TEMP_SENSOR)
-  {
-    //Single data stream upload
-    temp = temp18B20.temp();
-  }
-  else
-  {
-    temp = 0.00;
-  }
-  return temp;
-}
-
 // READ Battery
 float readBattery()
 {

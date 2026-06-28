@@ -59,7 +59,7 @@ void saveConfiguration(const Config & config) {
   plant["humid"] = floatToString(config.humid);
   plant["soil"] = floatToString(config.soil);
   plant["soilRaw"] = config.soilRaw;
-  plant["soilTemp"] = floatToString(config.soilTemp);
+  plant["soilCalibration"] = config.soilCalibration;
   plant["salt"] = floatToString(config.salt);
   plant["saltadvice"] = config.saltadvice;
   plant["bat"] = floatToString(config.bat);

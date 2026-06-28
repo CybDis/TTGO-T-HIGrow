@@ -35,9 +35,9 @@ HADevice device;
 HAMqtt mqtt(wifiClient, device);
 
 // HA Sensors - Store IDs as global variables to prevent memory issues
-String globalNameId, globalMacId, globalLuxId, globalTempId, globalHumId, globalSoilId, 
-       globalSoilRawId, globalSoilTempId, globalSaltId, globalSaltAdvId, globalBatId, 
-       globalBatChargeId, globalBatChargeDateId, globalDaysId, globalPressId, globalWifiId, 
+String globalNameId, globalMacId, globalLuxId, globalTempId, globalHumId, globalSoilId,
+       globalSoilRawId, globalSoilCalId, globalSaltId, globalSaltAdvId, globalBatId,
+       globalBatChargeId, globalBatChargeDateId, globalDaysId, globalPressId, globalWifiId,
        globalValveId, globalRelId, globalUpdId, globalSlp5Id, globalBootId;
 
 HASensor* sensorLux;
@@ -45,7 +45,7 @@ HASensor* sensorTemp;
 HASensor* sensorHumid;
 HASensor* sensorSoil;
 HASensor* sensorSoilRaw;
-HASensor* sensorSoilTemp;
+HASensor* sensorSoilCalibration;
 HASensor* sensorSalt;
 HASensor* sensorSaltAdvice;
 HASensor* sensorBat;
@@ -166,14 +166,10 @@ void sendDiscoveryTopic() {
   sensorSoilRaw->setStateClass("measurement");
   sensorSoilRaw->setForceUpdate(true);
 
-  globalSoilTempId = "TTGO_" + chipId + "_soilTemp";
-  sensorSoilTemp = new HASensor(globalSoilTempId.c_str());
-  sensorSoilTemp->setName("SoilTemp");
-  sensorSoilTemp->setUnitOfMeasurement("°C");
-  sensorSoilTemp->setDeviceClass("temperature");
-  sensorSoilTemp->setIcon("mdi:thermometer");
-  sensorSoilTemp->setStateClass("measurement");
-  sensorSoilTemp->setForceUpdate(true);
+  globalSoilCalId = "TTGO_" + chipId + "_soilCalibration";
+  sensorSoilCalibration = new HASensor(globalSoilCalId.c_str());
+  sensorSoilCalibration->setName("SoilCalibration");
+  sensorSoilCalibration->setIcon("mdi:tune");
 
   globalSaltId = "TTGO_" + chipId + "_salt";
   sensorSalt = new HASensor(globalSaltId.c_str());
@@ -283,7 +279,7 @@ void updateHASensors(const Config& config) {
   sensorSoil->setValue(formatSensorValue(config.soil, true).c_str());  // integer
   
   sensorSoilRaw->setValue(config.soilRaw.c_str());
-  sensorSoilTemp->setValue(formatSensorValue(config.soilTemp).c_str());  // 1 decimal place
+  sensorSoilCalibration->setValue(config.soilCalibration.c_str());
   sensorSalt->setValue(formatSensorValue(config.salt, true).c_str());  // integer
   sensorSaltAdvice->setValue(config.saltadvice.c_str());
   
@@ -297,6 +293,34 @@ void updateHASensors(const Config& config) {
   sensorPlantValveNo->setValue(String(plantValveNo).c_str());
   sensorRelease->setValue(config.rel.c_str());
   
+  // Print MQTT payload summary to Serial (labels from discovery getName())
+  auto mqttLog = [](const HASensor* s, const String& val) {
+    Serial.print(F("  ")); Serial.print(s->getName()); Serial.print(F(": ")); Serial.println(val);
+  };
+  Serial.println(F("\n--- MQTT payload ---"));
+  mqttLog(sensorName,          plant_name);
+  mqttLog(sensorMacId,         chipId);
+  mqttLog(sensorUpdated,       config.updated);
+  mqttLog(sensorBootCount,     String(config.bootno));
+  mqttLog(sensorSleep5Count,   String(config.sleep5no));
+  mqttLog(sensorLux,           formatSensorValue(config.lux));
+  mqttLog(sensorTemp,          formatSensorValue(config.temp));
+  mqttLog(sensorHumid,         formatSensorValue(config.humid, true));
+  mqttLog(sensorSoil,          formatSensorValue(config.soil, true));
+  mqttLog(sensorSoilRaw,          config.soilRaw);
+  mqttLog(sensorSoilCalibration,  config.soilCalibration);
+  mqttLog(sensorSalt,          formatSensorValue(config.salt, true));
+  mqttLog(sensorSaltAdvice,    config.saltadvice);
+  mqttLog(sensorBat,           formatSensorValue(config.bat, true));
+  mqttLog(sensorBatCharge,     config.batcharge);
+  mqttLog(sensorBatChargeDate, config.batchargeDate);
+  mqttLog(sensorDaysOnBattery, formatSensorValue(config.daysOnBattery));
+  mqttLog(sensorPressure,      formatSensorValue(config.pressure, true));
+  mqttLog(sensorWifiSSID,      WiFi.SSID());
+  mqttLog(sensorPlantValveNo,  String(plantValveNo));
+  mqttLog(sensorRelease,       config.rel);
+  Serial.println(F("--------------------"));
+
   // Process MQTT updates
   mqtt.loop();
 

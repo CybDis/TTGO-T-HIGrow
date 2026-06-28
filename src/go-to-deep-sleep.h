@@ -1,11 +1,11 @@
-void goToDeepSleep()
+void goToDeepSleep(uint32_t sleepSeconds = TIME_TO_SLEEP)
 {
   Serial.print("Going to sleep: ");
-  Serial.print(TIME_TO_SLEEP);
+  Serial.print(sleepSeconds);
   Serial.print(" seconds = ");
-  Serial.print(TIME_TO_SLEEP / 60);
+  Serial.print(sleepSeconds / 60);
   Serial.println(" minutes.");
-  
+
   if (logging) {
     writeFile(SPIFFS, "/error.log", "Going to sleep for configured time \n");
   }
@@ -16,9 +16,9 @@ void goToDeepSleep()
 
   Serial.println("Zzzzz...");
   Serial.flush(true);
-  
+
   // Configure the timer to wake us up!
-  esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
+  esp_sleep_enable_timer_wakeup((uint64_t)sleepSeconds * uS_TO_S_FACTOR);
   
   // HiGrow3 ist defekt, so no external wakeup - we do not use it anyways
   //esp_sleep_enable_ext1_wakeup(GPIO_SEL_35, ESP_EXT1_WAKEUP_ALL_LOW);
