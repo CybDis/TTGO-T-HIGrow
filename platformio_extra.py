@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import hashlib
 import json
 import os
@@ -6,30 +5,20 @@ import re
 import subprocess
 import time
 
-=======
-import os
->>>>>>> f531aa2 (Linux Anpassungen)
 import serial
 import serial.tools.list_ports
 
 Import("env")
 
-<<<<<<< HEAD
 # OTA deploy destination (Home Assistant with Terminal & SSH addon, key-based auth)
 OTA_HOST = "root@192.168.1.6"
 OTA_PORT = "22"
 OTA_REMOTE_DIR = "/config/www/higrow"
 
-def reset_esp32(source, target, env):
-    """PlatformIO custom target to reset ESP32 via DTR"""
-
-    # Find serial port
-=======
 KNOWN_PORT_PATTERNS = ("ttyACM", "ttyUSB", "cu.SLAB", "usbserial", "COM")
 
 
 def find_esp32_port(preferred_port=None):
->>>>>>> f531aa2 (Linux Anpassungen)
     ports = list(serial.tools.list_ports.comports())
     if not ports:
         return None, ports
@@ -61,7 +50,6 @@ def reset_esp32(source, target, env):
         print("ERROR: No serial ports found!")
         return
 
-    port = ports[0].device
     print(f"Resetting ESP32 on {port}...")
 
     try:
@@ -88,10 +76,6 @@ env.AddCustomTarget(
 )
 
 
-<<<<<<< HEAD
-def ota_deploy(source, target, env):
-    """Build manifest.json and copy firmware + manifest to Home Assistant /local"""
-=======
 def reset_and_monitor_target(source, target, env):
     """PlatformIO custom target: reset ESP32 then open serial monitor by running the helper script.
 
@@ -138,7 +122,8 @@ env.AddCustomTarget(
 )
 
 
->>>>>>> f531aa2 (Linux Anpassungen)
+def ota_deploy(source, target, env):
+    """Build manifest.json and copy firmware + manifest to Home Assistant /local"""
 
     firmware = os.path.join(env.subst("$BUILD_DIR"), env.subst("$PROGNAME") + ".bin")
     if not os.path.isfile(firmware):
