@@ -63,7 +63,8 @@
 //           rel = "5.2.0"; // Local-Only no-internet-mode supported by using IP of local ntp server, e.g. Fritzbox.
 //           rel = "5.2.1"; // Optimized serial debug outputs and removed unnecessary sleeps
 //           rel = "5.3.0"; // Charging mode: sleep reduced to 5 minutes while charging. Removed SoulTemp as there is no sensor for it. Sending SoilCalibration value to compare to SoilRaw when on battery and measurements are strange
-const String rel = "5.4.0"; // OTA update: pull firmware from Home Assistant /local on every wake, deploy via "pio run -t ota_deploy"
+//           rel = "5.4.0"; // OTA update: pull firmware from Home Assistant /local on every wake, deploy via "pio run -t ota_deploy"
+const String rel = "5.4.1"; // Soil/Salt measured BEFORE WiFi (weak battery + WiFi load sags sensor rail, false 100% soil); soil now uses the same 120-sample trimmed mean as salt
 
 // mqtt constants
 WiFiClient wifiClient;
@@ -244,7 +245,41 @@ void setup()
   }
 
   read_batt_info();
-  
+
+  // Measure soil and salt BEFORE WiFi starts: the analog sensor chain is
+  // supplied from the battery rail, and on a weak battery the WiFi TX bursts
+  // sag that rail. The ADC reference is fixed, so a sagging rail shrinks the
+  // raw readings and soil falsely drifts towards 100%.
+  int16_t soil = readSoil();
+  config.soil = soil;
+  config.soilRaw = soilRead;
+
+  uint32_t salt = readSalt();
+  config.salt = salt;
+  Serial.print("Salt (raw): ");
+  Serial.println(salt);
+
+  String advice;
+  if (salt < 201)
+  {
+    advice = "needed";
+  }
+  else if (salt < 251)
+  {
+    advice = "low";
+  }
+  else if (salt < 351)
+  {
+    advice = "optimal";
+  }
+  else if (salt > 350)
+  {
+    advice = "too high";
+  }
+  Serial.print("Salt Advice: ");
+  Serial.println(advice);
+  config.saltadvice = advice;
+
   // Start WiFi and update time
   connectToNetwork();
   Serial.println(" ");
@@ -390,35 +425,6 @@ void setup()
     float bme_pressure = (bmp.readPressure() / 100.0F);
     config.pressure = bme_pressure;
   }
-
-  int16_t soil = readSoil();
-  config.soil = soil;
-  config.soilRaw = soilRead;
-  uint32_t salt = readSalt();
-  config.salt = salt;
-  Serial.print("Salt (raw): ");
-  Serial.println(salt);
-  
-  String advice;
-  if (salt < 201)
-  {
-    advice = "needed";
-  }
-  else if (salt < 251)
-  {
-    advice = "low";
-  }
-  else if (salt < 351)
-  {
-    advice = "optimal";
-  }
-  else if (salt > 350)
-  {
-    advice = "too high";
-  }
-  Serial.print("Salt Advice: ");
-  Serial.println(advice);
-  config.saltadvice = advice;
 
   // Battery status, and charging status and days.
   config.bat = bat;

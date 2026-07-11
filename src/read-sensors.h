@@ -1,31 +1,32 @@
 // READ Sensors
 uint16_t soilRead;
 
+// Trimmed mean over many ADC samples: the ESP32 ADC is noisy (+-20..50 counts),
+// so sort the samples, drop the extremes and average the rest.
+uint16_t readAnalogTrimmedMean(uint8_t pin)
+{
+  const uint8_t samples = 120;
+  uint16_t array[120];
+  uint32_t sum = 0;
+
+  for (int i = 0; i < samples; i++)
+  {
+    array[i] = analogRead(pin);
+    delay(2);
+  }
+  std::sort(array, array + samples);
+  for (int i = 1; i < samples - 1; i++)
+  {
+    sum += array[i];
+  }
+  return sum / (samples - 2);
+}
+
 // READ Salt
 // I am not quite sure how to read and use this number. I know that when put in water wich a DH value of 26, it gives a high number, but what it is and how to use ??????
 uint32_t readSalt()
 {
-  uint8_t samples = 120;
-  uint32_t humi = 0;
-  uint16_t array[120];
-
-  for (int i = 0; i < samples; i++)
-  {
-    array[i] = analogRead(SALT_PIN);
-  //  Serial.print("Read salt pin : ");
-
-  //  Serial.println(array[i]);
-    delay(2);
-  }
-  std::sort(array, array + samples);
-  for (int i = 0; i < samples; i++)
-  {
-    if (i == 0 || i == samples - 1)
-      continue;
-    humi += array[i];
-  }
-  humi /= samples - 2;
-  return humi;
+  return readAnalogTrimmedMean(SALT_PIN);
 }
 
 // READ Soil
@@ -47,7 +48,7 @@ int16_t readSoil()
 
   for (int i = 0; i < loop; i++)
   {
-    soilRead = analogRead(SOIL_PIN);
+    soilRead = readAnalogTrimmedMean(SOIL_PIN);
     if (calibrate_soil)
       Serial.print(i+1);
     Serial.print(" CALIBRATE ===================> Current soil reading: ");
@@ -70,6 +71,7 @@ int16_t readSoil()
     return 0;
   return result;
 }
+
 
 // READ Battery
 float readBattery()
@@ -94,25 +96,3 @@ float readBattery()
   //   return 0;
   return bat;
 }
-
-
-// #define WATERPOWER_PIN 17
-// #define WATERSIGNAL_PIN 36
-
-// READ Water Level
-// uint16_t readWaterLevel()
-// {
-//   pinMode(WATERPOWER_PIN, OUTPUT);
-//   digitalWrite(WATERPOWER_PIN, HIGH);  // turn the sensor ON
-//   delay(10);
-//   uint16_t value= analogRead(WATERSIGNAL_PIN); // read the analog value from sensor
-//   uint16_t percent = map(value, water_min, water_max, 0, 100);
-//   Serial.print("CALIBRATE ===================> Water level sensor value: ");
-//   Serial.print(value);
-//   Serial.print(" - percent after map: ");
-//   Serial.println(percent);
-//   digitalWrite(WATERPOWER_PIN, LOW);  // turn the sensor off
-//   if (percent > 100)
-//     return 100;
-//   return percent;
-// }

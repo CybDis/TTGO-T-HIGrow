@@ -79,25 +79,31 @@ Soil sensor calibration is critical for accurate readings:
    bool calibrate_soil = false;  // Set to true for calibration
    ```
 
-2. **Measure Dry Value**:
-   - Place the sensor in completely dry air/soil
-   - Note the `soil_min` value from serial output
+2. **Measure Wet Value** (`soil_min` — low raw value):
+   - Submerge the sensor up to the electronics in distilled water
+   - Note the raw value from serial output
    - Update the variable:
      ```cpp
-     int soil_min = 1535;  // Your dry value
+     int soil_min = 1535;  // Your wet (water) value
      ```
 
-3. **Measure Wet Value**:
-   - Submerge the sensor up to the electronics in distilled water
-   - Note the `soil_max` value from serial output
+3. **Measure Dry Value** (`soil_max` — high raw value):
+   - Place the sensor in completely dry air
+   - Note the raw value from serial output
    - Update the variable:
      ```cpp
-     int soil_max = 3300;  // Your wet value
+     int soil_max = 3300;  // Your dry (air) value
      ```
 
 4. **Finalize**:
    - Set `calibrate_soil = false`
    - Recompile and upload
+
+> **Note**: Calibrate with a full (or charging) battery. The analog sensor
+> rail follows the battery voltage, so raw readings shrink as the battery
+> drains (see `doc/2026-07-11-soil-battery-sag-analysis.md`). Since v5.4.1
+> soil/salt are measured before WiFi starts and averaged over 120 samples,
+> which removes most of this effect.
 
 ### Step 3: Plant Name Configuration
 

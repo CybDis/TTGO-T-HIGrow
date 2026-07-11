@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.4.1] - 2026-07-11
+
+### Fixed
+- **Soil/Salt readings shrink on weak battery**: the analog soil/salt front-end (CD4060 oscillator + TL034 amplifier chain) is supplied from the battery rail, while the ESP32 ADC measures against its fixed internal reference. With WiFi active, TX current bursts sag the rail on a weak battery, the raw soil value drops below `soil_min` and the soil sensor falsely pegs at 100%. Soil and salt are now measured **before** `connectToNetwork()`, so the ADC sampling happens without WiFi load (confirmed via HA history: recharge events stepped `SoilRaw` up by 130–420 counts within a day)
+- **Soil was a single ADC sample**: soil now uses the same 120-sample trimmed mean (sort, drop extremes, average) that salt always used — the noisy ESP32 ADC caused ±1–3% jitter on the soil percentage. Shared helper `readAnalogTrimmedMean()` in `read-sensors.h`, adds ~240 ms awake time per cycle
+
+---
+
 ## [5.4.0] - 2026-07-11
 
 ### MAJOR RELEASE: OTA Firmware Updates via Home Assistant

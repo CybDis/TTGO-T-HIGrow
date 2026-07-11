@@ -4,7 +4,6 @@
 #include <Arduino.h>
 bool calibrate_soil = false;          // Soil defaults - change them to your calibration data
 const bool update_plant_name = false  ; // Give the sensor a plant name, change to true, upload sketch and then revert to false
-int water_min = 0;
 
 // It is a really good thing to calibrate each unit for soil, first note the number when unit is on the table, 
 // the soil number is for zero humidity. Then place the unit up to the electronics into a glass of water, 
@@ -16,7 +15,6 @@ int water_min = 0;
 int soil_min = 1535;
 int soil_max = 3300;
 String plant_name = "Padron_1";
-int water_max = 9999;
 
 
 // Salt/Fertilizer recommandation break points. You can change these according to your own calibration measurements.
