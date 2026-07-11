@@ -218,6 +218,46 @@ If using with automatic watering system:
 int plantValveNo = 1;  // Valve number for this plant
 ```
 
+### Step 13: OTA Updates (Optional, Recommended)
+
+Enable over-the-air firmware updates via Home Assistant (see [OTA Firmware Updates](#ota-firmware-updates)):
+
+```cpp
+const char otaBaseUrl[] = "http://192.168.1.23:8123/local/higrow";  // empty = OTA disabled
+```
+
+Use `https://` if your Home Assistant serves port 8123 via SSL.
+
+## OTA Firmware Updates
+
+Since v5.4.0 the sensors can update their firmware over WiFi (pull principle: each sensor checks for a new version on every wake-up). The firmware is hosted on your Home Assistant under `config/www/higrow/`.
+
+### One-Time Setup
+
+1. Set `otaBaseUrl` in `user-variables.h` (Step 13 above)
+2. Flash every device **once via USB** with the OTA-capable firmware (v5.4.0+): `pio run -t upload`
+3. For automated deployment: install the **Terminal & SSH addon** on Home Assistant and set up key-based SSH access; adjust `OTA_HOST`, `OTA_PORT` and `OTA_REMOTE_DIR` at the top of `platformio_extra.py`
+
+### Rolling Out a New Version
+
+1. Increment the release version in `src/main.cpp` (`const String rel = "..."`)
+2. Run:
+   ```
+   pio run -t ota_deploy
+   ```
+   This builds the firmware, generates `manifest.json` (version, MD5, size) and copies both to Home Assistant via scp — the binary first, the manifest last, so the manifest never points to an incomplete file.
+3. Each sensor picks up the new version on its next wake-up (within one sleep interval; every 5 minutes for devices in charging mode), flashes it and reboots. The new version appears in the `Software version` sensor in Home Assistant.
+
+**Manual alternative** (no SSH addon): copy `firmware.bin` and `manifest.json` from `.pio/build/esp32dev/` to `config/www/higrow/` via the Samba share — same order, binary first.
+
+### Behavior & Safety
+
+- **OTA never blocks**: if the manifest is unreachable or invalid, the download aborts or the MD5 does not match, the sensor just continues its normal measurement cycle on the old firmware and retries on the next wake-up
+- **Downgrades work**: the version check is "different", not "newer" — deploying an older build rolls devices back
+- **SPIFFS survives**: plant name, soil calibration and battery info are per-device and untouched by updates
+- **No automatic rollback**: if a new firmware boots but crashes, the device stays on it — test each release on one device via USB before deploying it to the manifest
+- Verify what is deployed: `curl -k https://<ha-ip>:8123/local/higrow/manifest.json`
+
 ## Home Assistant Auto-Discovery
 
 ### Discovery Process (v5.0.0+)

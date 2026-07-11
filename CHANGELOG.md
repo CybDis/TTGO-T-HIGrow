@@ -2,6 +2,65 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.4.0] - 2026-07-11
+
+### MAJOR RELEASE: OTA Firmware Updates via Home Assistant
+
+#### Added
+- **Pull-OTA**: On every wake-up (right after WiFi connect, before NTP/measurement/MQTT) the sensor fetches `manifest.json` from Home Assistant `/local`, compares the version to its own release and, if it differs, streams `firmware.bin` into the inactive OTA slot (MD5-verified) and reboots into the new firmware
+- **Downgrade support**: Version check is deliberately `!=` instead of `>` — putting an older build into the manifest rolls devices back
+- **HTTPS support** for HA instances serving port 8123 via SSL (`WiFiClientSecure`, integrity ensured by manifest MD5)
+- **PlatformIO deploy target** `pio run -t ota_deploy`: builds, generates `manifest.json` (version, MD5, size) and copies both via scp to `/config/www/higrow/` on HA (binary first, manifest last)
+- New user variable `otaBaseUrl` in `user-variables.h` (empty = OTA check disabled)
+- Implementation notes and operating guide in `doc/2026-07-10-ota-update-design.md`
+
+#### Changed
+- OTA never blocks: unreachable manifest, invalid JSON, aborted download or MD5 mismatch simply continue the normal measurement cycle on the old firmware
+
+#### Removed
+- Unused `ArduinoHttpClient` dependency (its `HttpClient.h` shadowed the ESP32 framework's `HTTPClient.h` on case-insensitive filesystems and broke the build on Windows)
+
+#### Migration Notes
+- **One last USB flash per device** (`pio run -t upload`) to get the OTA-capable firmware on board — all later versions arrive over the air
+- No partition change: the build fits the default scheme's two OTA app slots, SPIFFS (plant name, soil calibration, battery info) is preserved
+- No automatic rollback if a new firmware boots but crashes — test each release on one device via USB before deploying it to the manifest
+
+#### Memory Usage
+- **RAM**: 16.2% (53,056 bytes of 327,680 bytes)
+- **Flash**: 89.8% (1,176,845 bytes of 1,310,720 bytes) — HTTPClient/TLS adds ~180 KB
+
+---
+
+## [5.3.0] - 2026-06-28
+
+### Added
+- **Charging mode**: sleep interval reduced to 5 minutes while the battery is charging
+- `SoilCalibration` sensor (min:max) published to Home Assistant to compare against `SoilRaw` when readings look strange on battery
+
+### Removed
+- SoilTemp sensor (no hardware present for it)
+
+### Changed
+- Dependency updates
+
+## [5.2.1] - 2026-06-01
+
+### Changed
+- Optimized serial debug outputs
+- Removed unnecessary sleeps
+
+## [5.2.0] - 2026-06-01
+
+### Added
+- **Local-only / no-internet mode**: optional `ntpServerIp` uses a local NTP server IP (e.g. Fritzbox) instead of an internet NTP hostname
+
+## [5.1.0] - 2026-05-29
+
+### Changed
+- Enabled `force_update` on all measurement sensors in HA Discovery so `last_changed` updates even when the value stays the same
+
+---
+
 ## [5.0.1] - 2026-05-05
 
 ### Added
