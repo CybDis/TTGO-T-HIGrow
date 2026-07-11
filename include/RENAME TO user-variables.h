@@ -47,6 +47,10 @@ int        port     = 1883;
 const char mqttuser[] = ""; //add eventual mqtt username
 const char mqttpass[] = ""; //add eventual mqtt password
 
+// OTA update via Home Assistant /local (leave empty to disable OTA check).
+// Note: use https if your HA serves port 8123 via SSL. Deploy new firmware with "pio run -t ota_deploy".
+const char otaBaseUrl[] = ""; // e.g. "http://192.168.1.23:8123/local/higrow"
+
 
 
 //If using the Greenhouse automatic watering repo, then assign a waterValveNo to the plant. 

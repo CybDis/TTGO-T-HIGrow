@@ -62,7 +62,8 @@
 //           rel = "5.1.0"; // Enable force_update on all measurement sensors in HA Discovery so last_changed updates even when value stays the same
 //           rel = "5.2.0"; // Local-Only no-internet-mode supported by using IP of local ntp server, e.g. Fritzbox.
 //           rel = "5.2.1"; // Optimized serial debug outputs and removed unnecessary sleeps
-const String rel = "5.3.0"; // Charging mode: sleep reduced to 5 minutes while charging. Removed SoulTemp as there is no sensor for it. Sending SoilCalibration value to compare to SoilRaw when on battery and measurements are strange
+//           rel = "5.3.0"; // Charging mode: sleep reduced to 5 minutes while charging. Removed SoulTemp as there is no sensor for it. Sending SoilCalibration value to compare to SoilRaw when on battery and measurements are strange
+const String rel = "5.4.0"; // OTA update: pull firmware from Home Assistant /local on every wake, deploy via "pio run -t ota_deploy"
 
 // mqtt constants
 WiFiClient wifiClient;
@@ -139,6 +140,7 @@ String dayStamp;
 #include <read-sensors.h>
 #include <save-configuration.h>
 #include <connect-to-network.h>
+#include <ota-update.h>
 #include <read-batt-info.h>
 #include <floatConv.h>
 #include <home-assistant-discovery.h>    // NEW v5.0.0: Home Assistant Auto Discovery functions
@@ -260,6 +262,10 @@ void setup()
   Serial.println(WiFi.dnsIP());
   Serial.print("  Hostname: ");
   Serial.println(WiFi.getHostname());
+
+  // OTA check before NTP/measurement/MQTT: on update the device flashes and
+  // reboots immediately, the new firmware then does measurement and publish.
+  checkForOtaUpdate(rel);
 
   IPAddress ntpServerIPAddress;
   bool hasNtpServerIp = strlen(ntpServerIp) > 0;
