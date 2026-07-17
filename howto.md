@@ -186,6 +186,8 @@ Control how often the sensor sends data (in seconds):
 //#define TIME_TO_SLEEP  21600   // 360 minutes = 6h
 ```
 
+**Clock-aligned wake-ups (since v5.5.0):** the sensor does not simply sleep the configured number of seconds — it computes the sleep duration so the next wake-up lands on the clock grid defined by the interval: on the full hour with `3600`, on the half hour (`:00`/`:30`) with `1800`, on every second full hour with `7200`, and so on. Alignment is based on NTP (UTC) time; if the NTP sync fails, the sensor falls back to sleeping the plain interval. If the next grid point is less than two minutes away, the sensor skips ahead to the following one so it does not wake up again almost immediately.
+
 ### Step 9: Logging Configuration
 
 For debugging and troubleshooting:

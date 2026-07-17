@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.5.0] - 2026-07-17
+
+### Added
+- **Clock-aligned wake-ups**: instead of sleeping a fixed `TIME_TO_SLEEP` after the MQTT publish (which lets the wake-up time drift with every boot), the sleep duration is now computed to the next clock-grid point based on NTP time: full hour for `3600`, half hour (`:00`/`:30`) for `1800`, every second full hour for `7200` — generic for any interval (`remaining = interval - (epoch % interval)`)
+- **Minimum-sleep guard**: if the next grid point is less than 120 s away (e.g. the publish finished just before the full hour), the device skips to the following grid point instead of waking up almost immediately
+- **NTP fallback**: when the NTP sync failed, the device sleeps the plain `TIME_TO_SLEEP` as before
+
+### Notes
+- Alignment is based on UTC epoch time; with a 2 h interval the wake-ups land on every second full hour (even UTC hours), which may be odd local hours depending on timezone
+- Charging mode (5-minute interval) stays unaligned
+- Deep-sleep timer drift does not accumulate because every boot re-aligns against NTP
+
+---
+
 ## [5.4.1] - 2026-07-11
 
 ### Fixed

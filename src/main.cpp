@@ -64,7 +64,8 @@
 //           rel = "5.2.1"; // Optimized serial debug outputs and removed unnecessary sleeps
 //           rel = "5.3.0"; // Charging mode: sleep reduced to 5 minutes while charging. Removed SoulTemp as there is no sensor for it. Sending SoilCalibration value to compare to SoilRaw when on battery and measurements are strange
 //           rel = "5.4.0"; // OTA update: pull firmware from Home Assistant /local on every wake, deploy via "pio run -t ota_deploy"
-const String rel = "5.4.1"; // Soil/Salt measured BEFORE WiFi (weak battery + WiFi load sags sensor rail, false 100% soil); soil now uses the same 120-sample trimmed mean as salt
+//           rel = "5.4.1"; // Soil/Salt measured BEFORE WiFi (weak battery + WiFi load sags sensor rail, false 100% soil); soil now uses the same 120-sample trimmed mean as salt
+const String rel = "5.5.0"; // Wake-ups aligned to the clock grid: sleep duration is computed to the next full hour (3600), half hour (1800), etc. based on NTP time
 
 // mqtt constants
 WiFiClient wifiClient;
@@ -133,6 +134,29 @@ DS18B20 temp18B20(DS18B20_PIN);
 WiFiUDP ntpUDP;
 NTPClient* timeClient = nullptr;
 String dayStamp;
+bool ntpOk = false;
+
+// Sleep until the next clock-grid point (full hour for 3600 s, half hour for
+// 1800 s, every second full hour for 7200 s, ...). Works for any interval
+// because the Unix epoch is aligned to midnight UTC. Falls back to the raw
+// interval when no valid NTP time is available.
+uint32_t alignedSleepSeconds(uint32_t intervalSeconds, bool timeValid)
+{
+  if (!timeValid || intervalSeconds == 0)
+  {
+    return intervalSeconds;
+  }
+  const uint32_t MIN_SLEEP_S = 120;
+  unsigned long now = timeClient->getEpochTime();
+  uint32_t remaining = intervalSeconds - (uint32_t)(now % intervalSeconds);
+  if (remaining < MIN_SLEEP_S)
+  {
+    // Too close to the next grid point - skip to the one after it so the
+    // device does not wake up again almost immediately.
+    remaining += intervalSeconds;
+  }
+  return remaining;
+}
 
 // Start Subroutines
 #include <file-management.h>
@@ -325,7 +349,7 @@ void setup()
   // DEBUG: Start NTP synchronization
   Serial.println(F("\n  [NTP] Starting time synchronization..."));
   unsigned long ntpStart = millis();
-  bool ntpOk = false;
+  ntpOk = false;
   while (millis() - ntpStart < 20000UL)
   {
     if (timeClient->update())
@@ -493,7 +517,9 @@ void setup()
 
   // Go to sleep now
   delay(200);
-  uint32_t sleepTime = (config.batcharge == "charging") ? 300 : TIME_TO_SLEEP;
+  uint32_t sleepTime = (config.batcharge == "charging")
+                         ? 300
+                         : alignedSleepSeconds(TIME_TO_SLEEP, ntpOk);
   goToDeepSleep(sleepTime);
 }
 

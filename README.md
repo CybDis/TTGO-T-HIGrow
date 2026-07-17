@@ -3,7 +3,9 @@
 
 ![T-Higrow](images/T-Higrow.jpg)
 
-> **NEW in v5.4.0**: Over-the-air (OTA) firmware updates via Home Assistant! After one last USB flash, all sensors update themselves over WiFi — see [OTA Firmware Updates](#ota-firmware-updates).
+> **NEW in v5.5.0**: Clock-aligned wake-ups! Sensors now wake on the clock grid — on the full hour with a 1 h sleep interval, on the half hour with 30 min, etc.
+>
+> **v5.4.0**: Over-the-air (OTA) firmware updates via Home Assistant! After one last USB flash, all sensors update themselves over WiFi — see [OTA Firmware Updates](#ota-firmware-updates).
 >
 > **v5.0.0**: Native Home Assistant Auto Discovery integration! No more external Python scripts needed.
 
