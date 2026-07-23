@@ -1,3 +1,5 @@
+#include <ArduinoHA.h>
+
 String floatToString(float value) {
   // Round the value to one decimal place
   float roundedValue = roundf(value * 10.0) / 10.0;
@@ -14,8 +16,8 @@ String floatToString(float value) {
   }
 }
 
-// External reference to ArduinoHA MQTT client (v5.0.0)
-extern PubSubClient mqttClient;
+// External reference to the shared ArduinoHA MQTT client (v5.0.0)
+extern HAMqtt mqtt;
 
 // Allocate a JsonDocument
 void saveConfiguration(const Config & config) {
@@ -84,14 +86,13 @@ void saveConfiguration(const Config & config) {
 
   Serial.println(buffer);
 
-  // Use ArduinoHA MQTT client instead of separate PubSubClient
+  // Publish via the same ArduinoHA mqtt client used for discovery, so there is
+  // only ever one MQTT client driving the shared wifiClient connection.
   Serial.println("  Publishing via ArduinoHA MQTT client...");
-  
-  // The ArduinoHA mqtt client is already connected from sendDiscoveryTopic()
-  // We can publish directly to the legacy topic for backward compatibility
+
   bool retained = true;
 
-  if (mqttClient.publish(topic, buffer, retained)) {
+  if (mqtt.publish(topic, buffer, retained)) {
     Serial.println("  Message published successfully via ArduinoHA");
   } else {
     Serial.println("  Error in Message, not published via ArduinoHA");

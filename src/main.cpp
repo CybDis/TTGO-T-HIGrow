@@ -7,7 +7,6 @@
 #include <ArduinoJson.h>
 #include <SD.h>
 #include <SPI.h>
-#include <PubSubClient.h>
 #include <Esp.h>
 #include <time.h>
 #include <TimeLib.h>
@@ -65,11 +64,11 @@
 //           rel = "5.3.0"; // Charging mode: sleep reduced to 5 minutes while charging. Removed SoulTemp as there is no sensor for it. Sending SoilCalibration value to compare to SoilRaw when on battery and measurements are strange
 //           rel = "5.4.0"; // OTA update: pull firmware from Home Assistant /local on every wake, deploy via "pio run -t ota_deploy"
 //           rel = "5.4.1"; // Soil/Salt measured BEFORE WiFi (weak battery + WiFi load sags sensor rail, false 100% soil); soil now uses the same 120-sample trimmed mean as salt
-const String rel = "5.5.0"; // Wake-ups aligned to the clock grid: sleep duration is computed to the next full hour (3600), half hour (1800), etc. based on NTP time
+//           rel = "5.5.0"; // Wake-ups aligned to the clock grid: sleep duration is computed to the next full hour (3600), half hour (1800), etc. based on NTP time
+const String rel = "5.5.1"; // Fixed corrupted/truncated HA discovery MQTT payloads: removed a second, never-connected PubSubClient that was injecting publishes onto ArduinoHA's live MQTT session on the same socket; legacy JSON topic now published via the single shared ArduinoHA client
 
 // mqtt constants
 WiFiClient wifiClient;
-PubSubClient mqttClient(wifiClient);
 
 // Date calculator
 unsigned long epochTime;

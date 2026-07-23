@@ -89,6 +89,11 @@ void sendDiscoveryTopic() {
   
   // Setup MQTT with custom topic prefix for compatibility
   mqtt.begin(broker, mqttuser, mqttpass);
+  // Explicit buffer size: the legacy combined-JSON topic (save-configuration.h)
+  // and the discovery payloads are streamed straight to the socket, but the
+  // fixed header/topic buffer should still comfortably fit the largest topic
+  // + header. Made explicit rather than relying on PubSubClient's default.
+  mqtt.setBufferSize(2048);
   
   // Create all sensors with TTGO prefix and chipId for compatibility - FIXED MEMORY ISSUE
   globalNameId = "TTGO_" + chipId + "_sensorname";
