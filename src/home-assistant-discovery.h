@@ -38,7 +38,7 @@ HAMqtt mqtt(wifiClient, device);
 String globalNameId, globalMacId, globalLuxId, globalTempId, globalHumId, globalSoilId,
        globalSoilRawId, globalSoilCalId, globalSaltId, globalSaltAdvId, globalBatId,
        globalBatChargeId, globalBatChargeDateId, globalDaysId, globalPressId, globalWifiId,
-       globalValveId, globalRelId, globalUpdId, globalSlp5Id, globalBootId;
+       globalValveId, globalRelId, globalUpdId, globalBootId;
 
 HASensor* sensorLux;
 HASensor* sensorTemp;
@@ -56,7 +56,6 @@ HASensor* sensorPressure;
 HASensor* sensorName;
 HASensor* sensorMacId;
 HASensor* sensorUpdated;
-HASensor* sensorSleep5Count;
 HASensor* sensorBootCount;
 HASensor* sensorWifiSSID;
 HASensor* sensorPlantValveNo;
@@ -113,13 +112,6 @@ void sendDiscoveryTopic() {
   sensorUpdated->setIcon("mdi:update");
   sensorUpdated->setForceUpdate(true);
   
-  globalSlp5Id = "TTGO_" + chipId + "_sleep5Count";
-  sensorSleep5Count = new HASensor(globalSlp5Id.c_str());
-  sensorSleep5Count->setName("Sleep5count");
-  sensorSleep5Count->setUnitOfMeasurement("count");
-  sensorSleep5Count->setIcon("mdi:counter");
-  sensorSleep5Count->setStateClass("total_increasing");
-
   globalBootId = "TTGO_" + chipId + "_bootCount";
   sensorBootCount = new HASensor(globalBootId.c_str());
   sensorBootCount->setName("Bootcount");
@@ -273,7 +265,6 @@ void updateHASensors(const Config& config) {
   
   sensorUpdated->setValue(config.updated.c_str());
   
-  sensorSleep5Count->setValue(String(config.sleep5no).c_str());
   sensorBootCount->setValue(String(config.bootno).c_str());
   sensorLux->setValue(formatSensorValue(config.lux).c_str());  // 1 decimal place
   
@@ -307,7 +298,6 @@ void updateHASensors(const Config& config) {
   mqttLog(sensorMacId,         chipId);
   mqttLog(sensorUpdated,       config.updated);
   mqttLog(sensorBootCount,     String(config.bootno));
-  mqttLog(sensorSleep5Count,   String(config.sleep5no));
   mqttLog(sensorLux,           formatSensorValue(config.lux));
   mqttLog(sensorTemp,          formatSensorValue(config.temp));
   mqttLog(sensorHumid,         formatSensorValue(config.humid, true));

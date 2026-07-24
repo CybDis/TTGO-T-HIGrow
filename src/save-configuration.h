@@ -54,7 +54,6 @@ void saveConfiguration(const Config & config) {
   plant["updated"] = config.updated;
   // plant["date"] = config.date;
   // plant["time"] = config.time;
-  plant["sleep5Count"] = config.sleep5no;
   plant["bootCount"] = config.bootno;
   plant["lux"] = floatToString(config.lux);
   plant["temp"] = floatToString(config.temp);
