@@ -51,9 +51,6 @@ const char otaBaseUrl[] = ""; // e.g. "http://192.168.1.23:8123/local/higrow"
 
 
 
-//If using the Greenhouse automatic watering repo, then assign a waterValveNo to the plant. 
-int plantValveNo = 1;
-
 // Turn logging on/off - turn read logfile on/off, turn delete logfile on/off ---> default is false for all 3, otherwise it can cause battery drainage.
 const bool  logging = false;
 const bool  readLogfile = false;

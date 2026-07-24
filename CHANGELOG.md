@@ -2,10 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
-## [5.5.2] - 2026-07-24
+## [5.5.3] - 2026-07-24
 
 ### Removed
+- **`plantValveNo`**: dropped the leftover valve-number variable, its HA Discovery sensor and MQTT JSON field. It was scaffolding for a Greenhouse auto-watering integration that never shipped and had no consumer.
 - **Sleep5Count sensor**: dead feature. The RTC counter was declared but never incremented, and never copied into the `config` struct sent to Home Assistant, so the `Sleep5count` sensor always reported `0`. Removed the RTC variable, the `Config.sleep5no` field, the HA Discovery sensor/topic, and the legacy JSON key
+
+---
+
+## [5.5.1] - 2026-07-23
+
+### Fixed
+- **Corrupted/truncated HA discovery MQTT payloads**: a second, never-connected `PubSubClient` (`main.cpp`'s `mqttClient`) was publishing directly onto the TCP socket that ArduinoHA's `HAMqtt` client already owned and was actively driving, since `PubSubClient::connected()` only checks the underlying socket state rather than whether that instance itself performed the MQTT CONNECT. Two independent MQTT framing state machines writing to one shared connection could desync packet length framing, producing malformed discovery JSON (fixes #5)
+
+### Changed
+- Removed the redundant `PubSubClient`; the legacy combined-JSON topic is now published through the single shared ArduinoHA `mqtt` client, with its buffer size set explicitly (`2048`) rather than relying on an incidental `PubSubClient` default
 
 ---
 

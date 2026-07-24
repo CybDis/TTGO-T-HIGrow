@@ -19,7 +19,6 @@
 
 // External references
 extern String plant_name;
-extern int plantValveNo;
 
 // Utility function for sensor value formatting
 String formatSensorValue(float value, bool isInteger = false) {
@@ -38,7 +37,7 @@ HAMqtt mqtt(wifiClient, device);
 String globalNameId, globalMacId, globalLuxId, globalTempId, globalHumId, globalSoilId,
        globalSoilRawId, globalSoilCalId, globalSaltId, globalSaltAdvId, globalBatId,
        globalBatChargeId, globalBatChargeDateId, globalDaysId, globalPressId, globalWifiId,
-       globalValveId, globalRelId, globalUpdId, globalBootId;
+       globalRelId, globalUpdId, globalBootId;
 
 HASensor* sensorLux;
 HASensor* sensorTemp;
@@ -58,7 +57,6 @@ HASensor* sensorMacId;
 HASensor* sensorUpdated;
 HASensor* sensorBootCount;
 HASensor* sensorWifiSSID;
-HASensor* sensorPlantValveNo;
 HASensor* sensorRelease;
 
 void sendDiscoveryTopic() {
@@ -224,10 +222,6 @@ void sendDiscoveryTopic() {
   sensorWifiSSID->setName("WIFI");
   sensorWifiSSID->setIcon("mdi:wifi");
   
-  globalValveId = "TTGO_" + chipId + "_plantValveNo";
-  sensorPlantValveNo = new HASensor(globalValveId.c_str());
-  sensorPlantValveNo->setName("plantValveNo");
-  
   globalRelId = "TTGO_" + chipId + "_rel";
   sensorRelease = new HASensor(globalRelId.c_str());
   sensorRelease->setName("Release");
@@ -286,7 +280,6 @@ void updateHASensors(const Config& config) {
   sensorDaysOnBattery->setValue(formatSensorValue(config.daysOnBattery).c_str());  // 1 decimal place
   sensorPressure->setValue(formatSensorValue(config.pressure, true).c_str());  // integer
   sensorWifiSSID->setValue(WiFi.SSID().c_str());
-  sensorPlantValveNo->setValue(String(plantValveNo).c_str());
   sensorRelease->setValue(config.rel.c_str());
   
   // Print MQTT payload summary to Serial (labels from discovery getName())
@@ -312,7 +305,6 @@ void updateHASensors(const Config& config) {
   mqttLog(sensorDaysOnBattery, formatSensorValue(config.daysOnBattery));
   mqttLog(sensorPressure,      formatSensorValue(config.pressure, true));
   mqttLog(sensorWifiSSID,      WiFi.SSID());
-  mqttLog(sensorPlantValveNo,  String(plantValveNo));
   mqttLog(sensorRelease,       config.rel);
   Serial.println(F("--------------------"));
 

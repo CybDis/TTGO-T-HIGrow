@@ -66,7 +66,8 @@
 //           rel = "5.4.1"; // Soil/Salt measured BEFORE WiFi (weak battery + WiFi load sags sensor rail, false 100% soil); soil now uses the same 120-sample trimmed mean as salt
 //           rel = "5.5.0"; // Wake-ups aligned to the clock grid: sleep duration is computed to the next full hour (3600), half hour (1800), etc. based on NTP time
 //           rel = "5.5.1"; // Fixed corrupted/truncated HA discovery MQTT payloads: removed a second, never-connected PubSubClient that was injecting publishes onto ArduinoHA's live MQTT session on the same socket; legacy JSON topic now published via the single shared ArduinoHA client
-const String rel = "5.5.2"; // Removed Sleep5Count: the RTC counter was never incremented and never copied into config, so the HA sensor always reported 0
+//           rel = "5.5.2"; // Skipped locally/remotely due to conflicting unreleased cleanup builds
+const String rel = "5.5.3"; // Removed unused plantValveNo and dead Sleep5Count telemetry
 
 // mqtt constants
 WiFiClient wifiClient;

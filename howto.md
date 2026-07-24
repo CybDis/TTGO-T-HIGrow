@@ -52,14 +52,17 @@ The project uses a modular architecture with header files in the `src/` director
 src/
 ├── main.cpp                         # Main firmware logic
 ├── user-variables.h                 # Your configuration (created from template)
-├── module-parameter-management.h    # MQTT & device setup
 ├── connect-to-network.h            # WiFi connection
 ├── read-sensors.h                  # Sensor reading functions
 ├── read-batt-info.h                # Battery level calculation
 ├── home-assistant-discovery.h      # Home Assistant integration
 ├── go-to-deep-sleep.h              # Sleep mode management
-├── time-management.h               # NTP time synchronization
-└── [other helper modules]
+├── ota-update.h                    # OTA firmware update check
+├── save-configuration.h            # Legacy MQTT JSON publish
+├── file-management.h               # SPIFFS read/write helpers
+├── get-string-value.h              # String parsing helpers
+├── floatConv.h                     # Float truncation helper
+└── 18B20_class.h                   # DS18B20 sensor class (currently unused, see Step 7)
 ```
 
 ## Configuration Setup
@@ -169,11 +172,10 @@ bool dht_found = true;  // Set to false if no DHT sensor present
 
 #### External DS18B20 Temperature Sensor
 
-If you have an external DS18B20 soil temperature sensor connected to GPIO 21:
-
-```cpp
-const bool USE_18B20_TEMP_SENSOR = true;  // Set to true if available
-```
+The firmware declares a DS18B20 sensor object on GPIO 21 and a
+`USE_18B20_TEMP_SENSOR` flag in `user-variables.h`, but nothing in `main.cpp`
+currently reads the sensor or evaluates the flag — this feature is wired up
+but not implemented yet. Leave the flag as-is; changing it has no effect.
 
 ### Step 8: Reporting Interval
 
@@ -202,31 +204,14 @@ const bool  deleteLogfile = false;   // Delete stored log from SPIFFS
 
 ### Step 10: Fertilizer Thresholds
 
-Configure soil fertilizer (salt content) alert levels:
+`user-variables.h` declares `fertil_needed`, `fertil_low`, `fertil_opt` and
+`fertil_high`, but the firmware does not currently read them — the salt
+advice breakpoints are hardcoded in `main.cpp` and always classify as
+"needed" (<201), "low" (201-250), "optimal" (251-350) or "too high" (>350).
+Editing these variables has no effect; change the thresholds in `main.cpp`
+directly if you need different breakpoints.
 
-```cpp
-int fertil_needed = 200;    // Below this: "needed"
-int fertil_low = 201;       // 201-250: "low"
-int fertil_opt = 251;       // 251-350: "optimal"
-int fertil_high = 351;      // Above 351: "too high"
-```
-
-### Step 11: Soil Moisture Thresholds
-
-```cpp
-int water_min = 0;          // Minimum moisture level for alerts
-int water_max = 9999;       // Maximum moisture level
-```
-
-### Step 12: Watering Valve Number (Optional)
-
-If using with automatic watering system:
-
-```cpp
-int plantValveNo = 1;  // Valve number for this plant
-```
-
-### Step 13: OTA Updates (Optional, Recommended)
+### Step 11: OTA Updates (Optional, Recommended)
 
 Enable over-the-air firmware updates via Home Assistant (see [OTA Firmware Updates](#ota-firmware-updates)):
 
@@ -242,7 +227,7 @@ Since v5.4.0 the sensors can update their firmware over WiFi (pull principle: ea
 
 ### One-Time Setup
 
-1. Set `otaBaseUrl` in `user-variables.h` (Step 13 above)
+1. Set `otaBaseUrl` in `user-variables.h` (Step 11 above)
 2. Flash every device **once via USB** with the OTA-capable firmware (v5.4.0+): `pio run -t upload`
 3. For automated deployment: install the **Terminal & SSH addon** on Home Assistant and set up key-based SSH access; adjust `OTA_HOST`, `OTA_PORT` and `OTA_REMOTE_DIR` at the top of `platformio_extra.py`
 
@@ -280,7 +265,7 @@ The firmware provides **native Home Assistant integration** using the ArduinoHA 
 ### Sensors Published
 
 - **Environment**: Temperature, Humidity, Pressure, Light (Lux)
-- **Soil**: Moisture %, Raw values, Soil Temperature
+- **Soil**: Moisture %, Raw values, Calibration values
 - **Fertilizer**: Salt levels with advice (needed/low/optimal/too high)
 - **Battery**: Percentage, Voltage, Charging status, Days on battery
 - **System**: Boot count, Sleep count, MAC ID, WiFi SSID
@@ -428,7 +413,7 @@ Edit `platformio.ini` to customize:
 
 ```ini
 [env:esp32dev]
-platform = espressif32@6.8.1
+platform = espressif32
 board = esp32dev
 framework = arduino
 monitor_speed = 115200

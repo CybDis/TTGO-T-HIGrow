@@ -70,7 +70,6 @@ void saveConfiguration(const Config & config) {
   plant["battvolt"] = floatToString(config.batvolt);
   plant["battvoltage"] = floatToString(config.batvoltage);
   plant["pressure"] = floatToString(config.pressure);
-  plant["plantValveNo"] = plantValveNo;
   plant["wifissid"] = WiFi.SSID();
   plant["rel"] = config.rel;
 
@@ -99,4 +98,3 @@ void saveConfiguration(const Config & config) {
   }
   Serial.println();
 }
-
