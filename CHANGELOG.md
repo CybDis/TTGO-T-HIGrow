@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.5.2] - 2026-07-24
+
+### Removed
+- **Sleep5Count sensor**: dead feature. The RTC counter was declared but never incremented, and never copied into the `config` struct sent to Home Assistant, so the `Sleep5count` sensor always reported `0`. Removed the RTC variable, the `Config.sleep5no` field, the HA Discovery sensor/topic, and the legacy JSON key
+
+---
+
 ## [5.5.0] - 2026-07-17
 
 ### Added

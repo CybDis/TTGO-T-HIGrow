@@ -65,7 +65,8 @@
 //           rel = "5.4.0"; // OTA update: pull firmware from Home Assistant /local on every wake, deploy via "pio run -t ota_deploy"
 //           rel = "5.4.1"; // Soil/Salt measured BEFORE WiFi (weak battery + WiFi load sags sensor rail, false 100% soil); soil now uses the same 120-sample trimmed mean as salt
 //           rel = "5.5.0"; // Wake-ups aligned to the clock grid: sleep duration is computed to the next full hour (3600), half hour (1800), etc. based on NTP time
-const String rel = "5.5.1"; // Fixed corrupted/truncated HA discovery MQTT payloads: removed a second, never-connected PubSubClient that was injecting publishes onto ArduinoHA's live MQTT session on the same socket; legacy JSON topic now published via the single shared ArduinoHA client
+//           rel = "5.5.1"; // Fixed corrupted/truncated HA discovery MQTT payloads: removed a second, never-connected PubSubClient that was injecting publishes onto ArduinoHA's live MQTT session on the same socket; legacy JSON topic now published via the single shared ArduinoHA client
+const String rel = "5.5.2"; // Removed Sleep5Count: the RTC counter was never incremented and never copied into config, so the HA sensor always reported 0
 
 // mqtt constants
 WiFiClient wifiClient;
@@ -79,7 +80,6 @@ float daysOnBattery;
 
 // Reboot counters
 RTC_DATA_ATTR int bootCount = 0;
-RTC_DATA_ATTR int sleep5no = 0;
 
 // Sensor bools
 bool bme_found = false;
@@ -91,7 +91,6 @@ struct Config
   // String time;
   String updated;
   int bootno;
-  int sleep5no;
   float lux;
   float temp;
   float humid;
