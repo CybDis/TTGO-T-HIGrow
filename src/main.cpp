@@ -68,7 +68,8 @@
 //           rel = "5.5.1"; // Fixed corrupted/truncated HA discovery MQTT payloads: removed a second, never-connected PubSubClient that was injecting publishes onto ArduinoHA's live MQTT session on the same socket; legacy JSON topic now published via the single shared ArduinoHA client
 //           rel = "5.5.2"; // Skipped locally/remotely due to conflicting unreleased cleanup builds
 //           rel = "5.5.3"; // Removed unused plantValveNo and dead Sleep5Count telemetry
-const String rel = "5.5.5"; // Added RawBattAdc/RawBattVoltage HA Discovery sensors exposing the raw battery ADC reading and computed voltage as native HA entities; RawBattAdc has no unit of measurement, matching SoilRaw (both are raw ADC counts)
+//           rel = "5.5.5"; // Added RawBattAdc/RawBattVoltage HA Discovery sensors exposing the raw battery ADC reading and computed voltage as native HA entities; RawBattAdc has no unit of measurement, matching SoilRaw (both are raw ADC counts)
+const String rel = "5.5.6"; // Fixed battery voltage/percentage calibration: readBattery() now uses analogReadMilliVolts() (ESP32 eFuse Vref/Two-Point calibration) instead of a hardcoded vref=1100, which was found to under-report actual voltage by several percent; Battery% endpoints re-derived from 416/290 to 420/330 (4.2V standard LiPo full-charge, 3.3V lowest bench voltage the board still boots at); Battery% now clamped to 0-100%
 
 // mqtt constants
 WiFiClient wifiClient;

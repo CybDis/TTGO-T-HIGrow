@@ -74,25 +74,40 @@ int16_t readSoil()
 
 
 // READ Battery
+//
+// Battery ADC calibration: RawBattAdc -> voltage via analogReadMilliVolts(),
+// which uses the ESP32's factory eFuse Vref/Two-Point calibration internally.
+// Found to be accurate in practice (see doc/2026-07-25-battery-voltage-calibration-issue.md);
+// an earlier attempt at an additional per-device empirical linear fit was
+// removed again since it turned out to be unnecessary.
+//
+// Battery% endpoints: 420 = 4.2V, standard 1S LiPo full-charge voltage;
+// 330 = 3.3V, the lowest bench voltage at which HiGrow12 still boots
+// (3.2V fails to boot - LDO dropout), so 0% lines up with "about to die"
+// rather than an arbitrary lower voltage the board would never report from
+// anyway.
 float readBattery()
 {
   Serial.println("Reading battery:");
-  int vref = 1100;
+
   uint16_t volt = analogRead(BAT_ADC);
   Serial.print("  Volt direct: ");
   Serial.println(volt);
   config.batvolt = volt;
-  float battery_voltage = ((float)volt / 4095.0) * 2.0 * 3.3 * (vref) / 1000;
+
+  float battery_voltage = ((float)analogReadMilliVolts(BAT_ADC) / 1000.0) * 2.0; // 2.0 = board's BAT_ADC divider ratio
   config.batvoltage = battery_voltage;
   Serial.print("  Battery Voltage: ");
   Serial.println(battery_voltage);
-  
+
   battery_voltage = battery_voltage * 100;
-  float bat =  map(battery_voltage, 416, 290, 100, 0);
+  float bat =  map(battery_voltage, 420, 330, 100, 0);
   Serial.print("  Battery level: ");
   Serial.println(bat);
 
-  // if (bat < 0)
-  //   return 0;
+  if (bat < 0)
+    return 0;
+  if (bat > 100)
+    return 100;
   return bat;
 }

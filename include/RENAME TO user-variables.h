@@ -16,7 +16,6 @@ int soil_min = 1535;
 int soil_max = 3300;
 String plant_name = "Padron_1";
 
-
 // Salt/Fertilizer recommandation break points. You can change these according to your own calibration measurements.
 int fertil_needed = 200;
 int fertil_low = 201;

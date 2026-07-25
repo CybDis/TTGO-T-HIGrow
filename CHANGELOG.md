@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.5.6] - 2026-07-25
+
+### Fixed
+- **Battery voltage read low vs. actual supply voltage**: `readBattery()` computed the ADC-to-voltage conversion with a hardcoded `vref = 1100`, ignoring the ESP32's factory-trimmed eFuse reference voltage (varies ~1000-1200 mV per chip). Bench testing against a lab supply found this under-reported the real voltage by several percent, non-uniformly across the range. Replaced with `analogReadMilliVolts()` (Arduino-ESP32 core), which uses the chip's actual eFuse Vref/Two-Point calibration internally. Verified accurate (within ~1-2%) on multiple physical units without needing per-device calibration. See [doc/2026-07-25-battery-voltage-calibration-issue.md](doc/2026-07-25-battery-voltage-calibration-issue.md) for the full investigation, including a per-device empirical calibration approach that was built, tested, and ultimately not needed.
+- **`Battery %` could report outside 0-100**: the `map()` result was returned as-is; a negative percentage (e.g. -10%) was observed on a real unit. Now clamped to `[0, 100]`.
+
+### Changed
+- **`Battery %` endpoints** re-derived from `416`/`290` to `420`/`330` (4.2 V = standard 1S LiPo full-charge voltage, 3.3 V = the lowest voltage at which the board still boots - below that it browns out before it can report anything). The old endpoints were fitted against the now-replaced biased voltage formula and no longer matched once that formula was corrected.
+
+---
+
 ## [5.5.5] - 2026-07-25
 
 ### Added

@@ -293,7 +293,7 @@ void updateHASensors(const Config& config) {
   sensorBat->setValue(formatSensorValue(config.bat, true).c_str());  // integer
   sensorRawBattAdc->setValue(formatSensorValue(config.batvolt, true).c_str());
   sensorRawBattVoltage->setValue(formatSensorValue(config.batvoltage).c_str());
-  
+
   sensorBatCharge->setValue(config.batcharge.c_str());
   sensorBatChargeDate->setValue(config.batchargeDate.c_str());
   sensorDaysOnBattery->setValue(formatSensorValue(config.daysOnBattery).c_str());  // 1 decimal place
