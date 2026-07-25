@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Documentation
+- **Corrected the soil/battery sag root-cause analysis** (`doc/2026-07-11-soil-battery-sag-analysis.md`): the original analysis attributed the soil measurement to the CD4060 oscillator and the TL034 absolute-value chain, and described the analog rails as coming directly from the battery rail switched by `PWR_EN`. A netlist reconstructed from `images/schematic.pdf` shows otherwise. Soil on GPIO32 (net `Humi`) is a TLC555 astable (`U11`) supplied from `V3V`, whose output drives the probe through `R31` and is peak-detected by `D5` into `C53`; the CD4060/TL034 chain is the salt/EC channel on GPIO34 (net `AD`). `V3V` is the output of `U4` (JC5333), a linear regulator fed directly from the cell, so the drift has a hard knee at that regulator's dropout point rather than being a gradual battery dependence. `PWR_EN` (GPIO4) does not gate the sensor rail; it bypasses the body diode of `Q3` between `BAT` and the system rail. The observed symptom, the recorded evidence and the 5.4.1 fix are unaffected
+- Added the transfer model (`SoilRaw ~ probe ratio * V3V - U_D5`, roughly 1200 counts/V) which reconciles the previously recorded +420 count step after recharge with about 0.35 V of lost `V3V`, and an explanation for why the apparent threshold differs per device: `readBattery()` hardcodes `vref = 1100` and uses raw `analogRead()` with the non-linear 11 dB attenuation, so the same physical dropout point is reported differently on each chip
+- **New `doc/board-rails-and-headers.md`**: reference for the three supply rails (`+5V` system rail, `VDD3V3` for the ESP32, `V3V` for the sensors and analog front-end), the analog-channel-to-GPIO mapping, and the full pinout of `P1`, `P2`, `P6` and `P8`. Records that both side-header `M3V` pins are the same `VDD3V3` net and that `V3V` is only reachable on `P6` pin 1 and `P8` pin 1, plus two labelling errors in `images/T-Higrow.jpg`
+
+---
+
 ## [5.5.5] - 2026-07-25
 
 ### Added
