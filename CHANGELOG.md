@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.5.5] - 2026-07-25
+
+### Added
+- **`RawBattAdc` / `RawBattVoltage` HA Discovery sensors**: the raw battery ADC reading and its computed voltage were previously only available buried in the legacy combined-JSON MQTT payload (`battvolt`/`battvoltage`). They are now also published as native Home Assistant entities, so they can be graphed/alerted on directly without a template sensor. `RawBattAdc` has no unit of measurement, matching `SoilRaw` (both are uncalibrated raw ADC counts).
+
+### Changed
+- **`sensorSaltAdvice` no longer forces updates**: "Fertilize state" is a derived text status (`needed`, `low`, `optimal`, `too high`) that normally changes rarely. With `force_update = true`, Home Assistant treated every MQTT publish as a state update even when the same value (e.g. `too high`) was republished — since the sensor wakes from deep sleep and republishes its state every cycle, this filled the HA history with many identical entries. Not needed for this low-relevance status entity; without `setForceUpdate(true)`, Home Assistant now only records actual state changes.
+
+---
+
 ## [5.5.3] - 2026-07-24
 
 ### Removed

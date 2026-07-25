@@ -36,8 +36,8 @@ HAMqtt mqtt(wifiClient, device);
 // HA Sensors - Store IDs as global variables to prevent memory issues
 String globalNameId, globalMacId, globalLuxId, globalTempId, globalHumId, globalSoilId,
        globalSoilRawId, globalSoilCalId, globalSaltId, globalSaltAdvId, globalBatId,
-       globalBatChargeId, globalBatChargeDateId, globalDaysId, globalPressId, globalWifiId,
-       globalRelId, globalUpdId, globalBootId;
+       globalRawBattAdcId, globalRawBattVoltageId, globalBatChargeId, globalBatChargeDateId,
+       globalDaysId, globalPressId, globalWifiId, globalRelId, globalUpdId, globalBootId;
 
 HASensor* sensorLux;
 HASensor* sensorTemp;
@@ -48,6 +48,8 @@ HASensor* sensorSoilCalibration;
 HASensor* sensorSalt;
 HASensor* sensorSaltAdvice;
 HASensor* sensorBat;
+HASensor* sensorRawBattAdc;
+HASensor* sensorRawBattVoltage;
 HASensor* sensorBatCharge;
 HASensor* sensorBatChargeDate;
 HASensor* sensorDaysOnBattery;
@@ -178,8 +180,7 @@ void sendDiscoveryTopic() {
   sensorSaltAdvice = new HASensor(globalSaltAdvId.c_str());
   sensorSaltAdvice->setName("Fertilize state");
   sensorSaltAdvice->setIcon("mdi:alpha-i-circle-outline");
-  sensorSaltAdvice->setForceUpdate(true);
-  
+
   globalBatId = "TTGO_" + chipId + "_bat";
   sensorBat = new HASensor(globalBatId.c_str());
   sensorBat->setName("Battery");
@@ -188,6 +189,22 @@ void sendDiscoveryTopic() {
   sensorBat->setIcon("mdi:battery");
   sensorBat->setStateClass("measurement");
   sensorBat->setForceUpdate(true);
+
+  globalRawBattAdcId = "TTGO_" + chipId + "_RawBattAdc";
+  sensorRawBattAdc = new HASensor(globalRawBattAdcId.c_str());
+  sensorRawBattAdc->setName("RawBattAdc");
+  sensorRawBattAdc->setIcon("mdi:gauge");
+  sensorRawBattAdc->setStateClass("measurement");
+  sensorRawBattAdc->setForceUpdate(true);
+
+  globalRawBattVoltageId = "TTGO_" + chipId + "_RawBattVoltage";
+  sensorRawBattVoltage = new HASensor(globalRawBattVoltageId.c_str());
+  sensorRawBattVoltage->setName("RawBattVoltage");
+  sensorRawBattVoltage->setUnitOfMeasurement("V");
+  sensorRawBattVoltage->setDeviceClass("voltage");
+  sensorRawBattVoltage->setIcon("mdi:flash");
+  sensorRawBattVoltage->setStateClass("measurement");
+  sensorRawBattVoltage->setForceUpdate(true);
 
   globalBatChargeId = "TTGO_" + chipId + "_batcharge";
   sensorBatCharge = new HASensor(globalBatChargeId.c_str());
@@ -274,6 +291,8 @@ void updateHASensors(const Config& config) {
   sensorSaltAdvice->setValue(config.saltadvice.c_str());
   
   sensorBat->setValue(formatSensorValue(config.bat, true).c_str());  // integer
+  sensorRawBattAdc->setValue(formatSensorValue(config.batvolt, true).c_str());
+  sensorRawBattVoltage->setValue(formatSensorValue(config.batvoltage).c_str());
   
   sensorBatCharge->setValue(config.batcharge.c_str());
   sensorBatChargeDate->setValue(config.batchargeDate.c_str());
@@ -300,6 +319,8 @@ void updateHASensors(const Config& config) {
   mqttLog(sensorSalt,          formatSensorValue(config.salt, true));
   mqttLog(sensorSaltAdvice,    config.saltadvice);
   mqttLog(sensorBat,           formatSensorValue(config.bat, true));
+  mqttLog(sensorRawBattAdc,    formatSensorValue(config.batvolt, true));
+  mqttLog(sensorRawBattVoltage,formatSensorValue(config.batvoltage));
   mqttLog(sensorBatCharge,     config.batcharge);
   mqttLog(sensorBatChargeDate, config.batchargeDate);
   mqttLog(sensorDaysOnBattery, formatSensorValue(config.daysOnBattery));

@@ -67,7 +67,8 @@
 //           rel = "5.5.0"; // Wake-ups aligned to the clock grid: sleep duration is computed to the next full hour (3600), half hour (1800), etc. based on NTP time
 //           rel = "5.5.1"; // Fixed corrupted/truncated HA discovery MQTT payloads: removed a second, never-connected PubSubClient that was injecting publishes onto ArduinoHA's live MQTT session on the same socket; legacy JSON topic now published via the single shared ArduinoHA client
 //           rel = "5.5.2"; // Skipped locally/remotely due to conflicting unreleased cleanup builds
-const String rel = "5.5.3"; // Removed unused plantValveNo and dead Sleep5Count telemetry
+//           rel = "5.5.3"; // Removed unused plantValveNo and dead Sleep5Count telemetry
+const String rel = "5.5.5"; // Added RawBattAdc/RawBattVoltage HA Discovery sensors exposing the raw battery ADC reading and computed voltage as native HA entities; RawBattAdc has no unit of measurement, matching SoilRaw (both are raw ADC counts)
 
 // mqtt constants
 WiFiClient wifiClient;
