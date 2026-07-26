@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.5.7] - 2026-07-26
+
+### Fixed
+- **Occasional `"nan"` MQTT payload causing Home Assistant "non-finite value" errors**: a failed DHT (or BME280) sensor transaction returns `NAN`, which was stored unchecked in `config.temp`/`config.humid` etc. and formatted straight through to the literal string `"nan"` by `formatSensorValue()`, which Home Assistant rejects for numeric sensors. `formatSensorValue()` now returns an empty sentinel for `NAN` input, and `updateHASensors()` skips `setValue()`/the MQTT log line for that sensor for the cycle instead of publishing `"nan"`, leaving the previously retained MQTT value in place — this guards all float-backed sensors (`lux`, `temp`, `humid`, `soil`, `salt`, `bat`, `batvolt`, `batvoltage`, `daysOnBattery`, `pressure`) at a single choke point. See [doc/2026-07-26-mqtt-nan-temperature-issue8-analysis.md](doc/2026-07-26-mqtt-nan-temperature-issue8-analysis.md) for the full investigation.
+
+---
+
 ## [5.5.6] - 2026-07-25
 
 ### Fixed

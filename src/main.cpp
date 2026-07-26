@@ -69,7 +69,8 @@
 //           rel = "5.5.2"; // Skipped locally/remotely due to conflicting unreleased cleanup builds
 //           rel = "5.5.3"; // Removed unused plantValveNo and dead Sleep5Count telemetry
 //           rel = "5.5.5"; // Added RawBattAdc/RawBattVoltage HA Discovery sensors exposing the raw battery ADC reading and computed voltage as native HA entities; RawBattAdc has no unit of measurement, matching SoilRaw (both are raw ADC counts)
-const String rel = "5.5.6"; // Fixed battery voltage/percentage calibration: readBattery() now uses analogReadMilliVolts() (ESP32 eFuse Vref/Two-Point calibration) instead of a hardcoded vref=1100, which was found to under-report actual voltage by several percent; Battery% endpoints re-derived from 416/290 to 420/330 (4.2V standard LiPo full-charge, 3.3V lowest bench voltage the board still boots at); Battery% now clamped to 0-100%
+//           rel = "5.5.6"; // Fixed battery voltage/percentage calibration: readBattery() now uses analogReadMilliVolts() (ESP32 eFuse Vref/Two-Point calibration) instead of a hardcoded vref=1100, which was found to under-report actual voltage by several percent; Battery% endpoints re-derived from 416/290 to 420/330 (4.2V standard LiPo full-charge, 3.3V lowest bench voltage the board still boots at); Battery% now clamped to 0-100%
+const String rel = "5.5.7"; // Fixed occasional "nan" MQTT payload (HA "non-finite value" error): formatSensorValue() now returns an empty sentinel for NAN readings (failed DHT/BME280 transaction), and updateHASensors() skips setValue()/mqttLog() for that sensor this cycle instead of publishing "nan", leaving the previously retained MQTT value in place
 
 // mqtt constants
 WiFiClient wifiClient;
@@ -433,9 +434,24 @@ void setup()
   if (dht_found)
   {
     float t12 = dht.readTemperature(); // Read temperature as Fahrenheit then dht.readTemperature(true)
+    if (isnan(t12))
+    {
+      // A single bad one-wire transaction can produce NAN; force bypasses
+      // the library's MIN_INTERVAL throttle so this retry is a real
+      // re-read rather than a cached repeat of the failed result. 300ms is
+      // shorter than the datasheet-recommended recovery time, traded off
+      // deliberately here to keep setup() runtime short.
+      delay(300);
+      t12 = dht.readTemperature(false, true);
+    }
     config.temp = t12;
     delay(2000);
     float h12 = dht.readHumidity();
+    if (isnan(h12))
+    {
+      delay(300);
+      h12 = dht.readHumidity(true);
+    }
     config.humid = h12;
   }
 

@@ -21,7 +21,13 @@
 extern String plant_name;
 
 // Utility function for sensor value formatting
+// Returns an empty String as a sentinel when the reading is not valid (e.g. a
+// failed sensor transaction produced NAN), so callers can skip publishing
+// this cycle instead of sending the literal "nan" over MQTT.
 String formatSensorValue(float value, bool isInteger = false) {
+  if (isnan(value)) {
+    return String();
+  }
   if (isInteger) {
     return String((int)value);
   } else {
@@ -277,54 +283,77 @@ void updateHASensors(const Config& config) {
   sensorUpdated->setValue(config.updated.c_str());
   
   sensorBootCount->setValue(String(config.bootno).c_str());
-  sensorLux->setValue(formatSensorValue(config.lux).c_str());  // 1 decimal place
-  
-  sensorTemp->setValue(formatSensorValue(config.temp).c_str());  // 1 decimal place
-  
-  sensorHumid->setValue(formatSensorValue(config.humid, true).c_str());  // integer
-  
-  sensorSoil->setValue(formatSensorValue(config.soil, true).c_str());  // integer
-  
+
+  // Format each float-backed sensor once; formatSensorValue() returns an
+  // empty String when the reading is invalid (NAN), which both setValue()
+  // and mqttLog() below use as the signal to skip this sensor for the
+  // cycle, leaving its previously retained MQTT value in place.
+  String luxVal          = formatSensorValue(config.lux);            // 1 decimal place
+  String tempVal         = formatSensorValue(config.temp);           // 1 decimal place
+  String humidVal        = formatSensorValue(config.humid, true);    // integer
+  String soilVal         = formatSensorValue(config.soil, true);     // integer
+  String saltVal         = formatSensorValue(config.salt, true);     // integer
+  String batVal          = formatSensorValue(config.bat, true);      // integer
+  String battAdcVal      = formatSensorValue(config.batvolt, true);
+  String battVoltageVal  = formatSensorValue(config.batvoltage);
+  String daysVal         = formatSensorValue(config.daysOnBattery);  // 1 decimal place
+  String pressureVal     = formatSensorValue(config.pressure, true); // integer
+
+  if (luxVal.length() > 0)         sensorLux->setValue(luxVal.c_str());
+  if (tempVal.length() > 0)        sensorTemp->setValue(tempVal.c_str());
+  if (humidVal.length() > 0)       sensorHumid->setValue(humidVal.c_str());
+  if (soilVal.length() > 0)        sensorSoil->setValue(soilVal.c_str());
+
   sensorSoilRaw->setValue(config.soilRaw.c_str());
   sensorSoilCalibration->setValue(config.soilCalibration.c_str());
-  sensorSalt->setValue(formatSensorValue(config.salt, true).c_str());  // integer
+  if (saltVal.length() > 0)        sensorSalt->setValue(saltVal.c_str());
   sensorSaltAdvice->setValue(config.saltadvice.c_str());
-  
-  sensorBat->setValue(formatSensorValue(config.bat, true).c_str());  // integer
-  sensorRawBattAdc->setValue(formatSensorValue(config.batvolt, true).c_str());
-  sensorRawBattVoltage->setValue(formatSensorValue(config.batvoltage).c_str());
+
+  if (batVal.length() > 0)         sensorBat->setValue(batVal.c_str());
+  if (battAdcVal.length() > 0)     sensorRawBattAdc->setValue(battAdcVal.c_str());
+  if (battVoltageVal.length() > 0) sensorRawBattVoltage->setValue(battVoltageVal.c_str());
 
   sensorBatCharge->setValue(config.batcharge.c_str());
   sensorBatChargeDate->setValue(config.batchargeDate.c_str());
-  sensorDaysOnBattery->setValue(formatSensorValue(config.daysOnBattery).c_str());  // 1 decimal place
-  sensorPressure->setValue(formatSensorValue(config.pressure, true).c_str());  // integer
+  if (daysVal.length() > 0)        sensorDaysOnBattery->setValue(daysVal.c_str());
+  if (pressureVal.length() > 0)    sensorPressure->setValue(pressureVal.c_str());
   sensorWifiSSID->setValue(WiFi.SSID().c_str());
   sensorRelease->setValue(config.rel.c_str());
-  
+
   // Print MQTT payload summary to Serial (labels from discovery getName())
   auto mqttLog = [](const HASensor* s, const String& val) {
     Serial.print(F("  ")); Serial.print(s->getName()); Serial.print(F(": ")); Serial.println(val);
+  };
+  // Same as mqttLog(), but for a float-backed sensor whose formatted value
+  // may be an empty sentinel (invalid/NAN reading) - logs the skip instead.
+  auto mqttLogOrSkip = [&mqttLog](const HASensor* s, const String& val) {
+    if (val.length() > 0) {
+      mqttLog(s, val);
+    } else {
+      Serial.print(F("  ")); Serial.print(s->getName());
+      Serial.println(F(": skipped (invalid/NAN reading, retaining previous value)"));
+    }
   };
   Serial.println(F("\n--- MQTT payload ---"));
   mqttLog(sensorName,          plant_name);
   mqttLog(sensorMacId,         chipId);
   mqttLog(sensorUpdated,       config.updated);
   mqttLog(sensorBootCount,     String(config.bootno));
-  mqttLog(sensorLux,           formatSensorValue(config.lux));
-  mqttLog(sensorTemp,          formatSensorValue(config.temp));
-  mqttLog(sensorHumid,         formatSensorValue(config.humid, true));
-  mqttLog(sensorSoil,          formatSensorValue(config.soil, true));
+  mqttLogOrSkip(sensorLux,     luxVal);
+  mqttLogOrSkip(sensorTemp,    tempVal);
+  mqttLogOrSkip(sensorHumid,   humidVal);
+  mqttLogOrSkip(sensorSoil,    soilVal);
   mqttLog(sensorSoilRaw,          config.soilRaw);
   mqttLog(sensorSoilCalibration,  config.soilCalibration);
-  mqttLog(sensorSalt,          formatSensorValue(config.salt, true));
+  mqttLogOrSkip(sensorSalt,    saltVal);
   mqttLog(sensorSaltAdvice,    config.saltadvice);
-  mqttLog(sensorBat,           formatSensorValue(config.bat, true));
-  mqttLog(sensorRawBattAdc,    formatSensorValue(config.batvolt, true));
-  mqttLog(sensorRawBattVoltage,formatSensorValue(config.batvoltage));
+  mqttLogOrSkip(sensorBat,            batVal);
+  mqttLogOrSkip(sensorRawBattAdc,     battAdcVal);
+  mqttLogOrSkip(sensorRawBattVoltage, battVoltageVal);
   mqttLog(sensorBatCharge,     config.batcharge);
   mqttLog(sensorBatChargeDate, config.batchargeDate);
-  mqttLog(sensorDaysOnBattery, formatSensorValue(config.daysOnBattery));
-  mqttLog(sensorPressure,      formatSensorValue(config.pressure, true));
+  mqttLogOrSkip(sensorDaysOnBattery, daysVal);
+  mqttLogOrSkip(sensorPressure,      pressureVal);
   mqttLog(sensorWifiSSID,      WiFi.SSID());
   mqttLog(sensorRelease,       config.rel);
   Serial.println(F("--------------------"));
