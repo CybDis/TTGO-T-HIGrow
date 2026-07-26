@@ -86,6 +86,13 @@ int16_t readSoil()
 // (3.2V fails to boot - LDO dropout), so 0% lines up with "about to die"
 // rather than an arbitrary lower voltage the board would never report from
 // anyway.
+//
+// The upper bound is intentionally NOT clamped here: while charging, the
+// measured voltage exceeds the 4.2V full-charge point, pushing the mapped
+// value above 100. main.cpp uses that ">100" overshoot (checked against a
+// margin, see the "charging" threshold there) to detect charging before
+// clamping config.bat down to 100 for display. Clamping it here would
+// silently break that detection.
 float readBattery()
 {
   Serial.println("Reading battery:");
@@ -107,7 +114,5 @@ float readBattery()
 
   if (bat < 0)
     return 0;
-  if (bat > 100)
-    return 100;
   return bat;
 }
