@@ -1,5 +1,8 @@
 # Copilot Instructions for TTGO T-HIGrow Project
 
+- Start every message and response with my name.
+- Always talk to me in German.
+
 ## Code Style Guidelines
 
 ### Language Requirements
