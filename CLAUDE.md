@@ -58,6 +58,7 @@ Serial.println("Temp reading done! 🎉");
 - Commit messages should be in English
 - Branch names should use English descriptors
 - Pull request descriptions must be in English
+- Never name Claude as committer or co-author on commits (no "Co-Authored-By: Claude" trailer, no Claude author identity)
 
 ## Enforcement
 These guidelines apply to:
