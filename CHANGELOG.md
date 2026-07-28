@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.5.9] - 2026-07-28
+
+### Fixed
+- **`Battery%`/`RawBattAdc` flickered by several percentage points between wake cycles**: `readBattery()` took a single unfiltered `analogRead()`/`analogReadMilliVolts()` sample, while Soil/Salt have used a 120-sample trimmed mean (`readAnalogTrimmedMean()`) against the ESP32 ADC's known ±20-50 count noise since 5.4.1. Because the `Battery%` mapping only spans 0.9V end-to-end (~1.1%/mV), that same noise translated into visible multi-percent jumps in Home Assistant, especially in the flat mid-charge region of the LiPo discharge curve. `readBattery()` now reads both `RawBattAdc` and the calibrated voltage feeding `Battery%` via trimmed-mean sampling (a new `readAnalogMilliVoltsTrimmedMean()` helper for the calibrated path, reusing the existing helper for the raw path). Also switched the `Battery%` `map()` call from truncating to rounding the millivolt-derived input. See [doc/2026-07-28-battery-percentage-flicker-analysis.md](doc/2026-07-28-battery-percentage-flicker-analysis.md) for the full investigation.
+
+---
+
+## [5.5.8] - 2026-07-27
+
+### Fixed
+- **Broken charging indicator**: 5.5.6 added an upper clamp inside `readBattery()` that capped the returned value at 100, but `main.cpp`'s charging detection relies on the mapped value exceeding 100 while the charger raises the voltage above the 4.2V full-charge point (checked as `bat > 120` before `config.bat` is separately clamped to 100 for display). With the value pre-clamped to 100 in `readBattery()`, that check could never fire again. Removed the upper clamp from `readBattery()`, keeping only the lower bound (`bat < 0` → `0`).
+
+---
+
 ## [5.5.7] - 2026-07-26
 
 ### Fixed
